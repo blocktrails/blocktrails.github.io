@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blocktrails Demo - Testnet4</title>
+  <meta name="description" content="Live demo of Blocktrails on Bitcoin testnet4">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --muted: #7d8590;
+      --accent: #f7931a;
+      --green: #3fb950;
+      --red: #f85149;
+      --code-bg: #161b22;
+      --border: #30363d;
+      --card-bg: #21262d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .back {
+      display: inline-block;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    .back:hover { color: var(--accent); }
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .tagline {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-left: 0.5rem;
+    }
+    .status-live { background: var(--green); color: #000; }
+    .status-pending { background: var(--accent); color: #000; }
+
+    .info-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .info-card h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .key-value {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+    }
+    .key-value:last-child { margin-bottom: 0; }
+    .key-value label {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .key-value code {
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+      font-size: 0.85rem;
+      background: var(--code-bg);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      word-break: break-all;
+      color: #a5d6ff;
+    }
+    .key-value a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .key-value a:hover { text-decoration: underline; }
+
+    .trail-container {
+      margin: 2rem 0;
+    }
+    .trail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .trail-header h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .trail-chain {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .trail-node {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .trail-node:hover {
+      border-color: var(--accent);
+    }
+    .trail-node.genesis {
+      border-color: var(--accent);
+    }
+    .trail-node.current {
+      border-color: var(--green);
+    }
+    .trail-node.current::after {
+      content: 'HEAD';
+      position: absolute;
+      top: -0.75rem;
+      right: 1rem;
+      background: var(--green);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+    .trail-node.genesis::before {
+      content: 'GENESIS';
+      position: absolute;
+      top: -0.75rem;
+      left: 1rem;
+      background: var(--accent);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .trail-arrow {
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem 0;
+      color: var(--muted);
+    }
+    .trail-arrow svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .node-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .node-index {
+      background: var(--code-bg);
+      color: var(--accent);
+      font-family: monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+    }
+    .node-state {
+      flex: 1;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--fg);
+      background: var(--code-bg);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .node-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      font-size: 0.85rem;
+    }
+    @media (max-width: 600px) {
+      .node-details { grid-template-columns: 1fr; }
+    }
+    .node-detail label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .node-detail code {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #a5d6ff;
+      word-break: break-all;
+    }
+    .node-detail a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .node-detail a:hover { text-decoration: underline; }
+
+    .controls {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .controls h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .control-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+    }
+    .control-row input {
+      flex: 1;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      color: var(--fg);
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .control-row input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .control-row button {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .control-row button:hover {
+      opacity: 0.9;
+    }
+    .control-row button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .control-hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    .mempool-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .mempool-link:hover { text-decoration: underline; }
+    .mempool-link svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .footer a:hover { text-decoration: underline; }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+    }
+    .error {
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid var(--red);
+      border-radius: 8px;
+      padding: 1rem;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="https://blocktrails.org" class="back">← blocktrails.org</a>
+
+    <h1>Blocktrails Demo <span class="status-badge status-live">Testnet4</span></h1>
+    <p class="tagline">Live demonstration of Nostr-native state on Bitcoin.</p>
+
+    <div class="info-card">
+      <h3>Demo Configuration</h3>
+      <div class="key-value">
+        <label>Base Public Key (npub-compatible)</label>
+        <code id="pubkey-base">Loading...</code>
+      </div>
+      <div class="key-value">
+        <label>Genesis Address (fund this to start)</label>
+        <code id="genesis-address">Loading...</code>
+        <a id="genesis-mempool" href="#" target="_blank" class="mempool-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          View on mempool.space
+        </a>
+      </div>
+    </div>
+
+    <div class="trail-container">
+      <div class="trail-header">
+        <h2>State Chain</h2>
+      </div>
+      <div id="trail-chain" class="trail-chain">
+        <div class="loading">Initializing demo...</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <h3>Advance State (Simulation)</h3>
+      <div class="control-row">
+        <input type="text" id="new-state" placeholder='{"counter": 1, "message": "Hello"}'>
+        <button id="advance-btn" onclick="advanceState()">Advance</button>
+      </div>
+      <p class="control-hint">
+        This simulates state transitions locally. On-chain transactions require signing and broadcasting.
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>
+        <a href="https://blocktrails.org/spec/">Specification</a> ·
+        <a href="https://github.com/blocktrails/blocktrails">Reference Implementation</a> ·
+        <a href="https://blocktrails.org">blocktrails.org</a>
+      </p>
+      <p style="margin-top: 0.5rem;">Blocktrails: Nostr-native state on Bitcoin.</p>
+    </div>
+  </main>
+
+  <script type="module">
+    // ============================================
+    // Blocktrails Demo - Inline Implementation
+    // ============================================
+
+    // Import noble libraries from CDN
+    import * as secp from 'https://esm.sh/@noble/secp256k1@2.1.0';
+    import { sha256 } from 'https://esm.sh/@noble/hashes@1.4.0/sha256';
+    import { bytesToHex, hexToBytes } from 'https://esm.sh/@noble/hashes@1.4.0/utils';
+
+    // secp256k1 curve order
+    const N = secp.CURVE.n;
+
+    // Demo private key (TESTNET ONLY - DO NOT USE WITH REAL FUNDS)
+    const DEMO_PRIVKEY = 'b10c47a115deadbeefcafebabedeadbeefcafebabedeadbeefcafebabe000001';
+
+    // Genesis state
+    const GENESIS_STATE = JSON.stringify({ counter: 0, message: "Blocktrails Demo Genesis" });
+
+    // Mempool explorer base URL (testnet4)
+    const MEMPOOL_BASE = 'https://mempool.space/testnet4';
+
+    // ============================================
+    // Core Blocktrails Functions
+    // ============================================
+
+    function bytesToBigInt(bytes) {
+      let result = 0n;
+      for (const byte of bytes) {
+        result = (result << 8n) + BigInt(byte);
+      }
+      return result;
+    }
+
+    function bigIntToBytes(num, length) {
+      const bytes = new Uint8Array(length);
+      for (let i = length - 1; i >= 0; i--) {
+        bytes[i] = Number(num & 0xffn);
+        num >>= 8n;
+      }
+      return bytes;
+    }
+
+    function computeTweak(state) {
+      const stateBytes = typeof state === 'string'
+        ? new TextEncoder().encode(state)
+        : state;
+      const hash = sha256(stateBytes);
+      return bytesToBigInt(hash) % N;
+    }
+
+    function derivePrivateKey(privateKeyBase, state) {
+      const dBase = bytesToBigInt(privateKeyBase);
+      const t = computeTweak(state);
+      if (t === 0n) throw new Error('Invalid state: tweak is zero');
+      return bigIntToBytes((dBase + t) % N, 32);
+    }
+
+    function derivePublicKey(publicKeyBase, state) {
+      const t = computeTweak(state);
+      if (t === 0n) throw new Error('Invalid state: tweak is zero');
+      const PBase = secp.ProjectivePoint.fromHex(publicKeyBase);
+      const tG = secp.ProjectivePoint.BASE.multiply(t);
+      return PBase.add(tG).toRawBytes(true);
+    }
+
+    function p2trXonly(publicKey) {
+      const P = secp.ProjectivePoint.fromHex(publicKey);
+      const { x } = P.toAffine();
+      return bigIntToBytes(x, 32);
+    }
+
+    // Bech32m encoding
+    const BECH32M_CONST = 0x2bc830a3;
+    const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+
+    function bech32Polymod(values) {
+      const GEN = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
+      let chk = 1;
+      for (const v of values) {
+        const top = chk >> 25;
+        chk = ((chk & 0x1ffffff) << 5) ^ v;
+        for (let i = 0; i < 5; i++) {
+          if ((top >> i) & 1) chk ^= GEN[i];
+        }
+      }
+      return chk;
+    }
+
+    function bech32HrpExpand(hrp) {
+      const ret = [];
+      for (const c of hrp) ret.push(c.charCodeAt(0) >> 5);
+      ret.push(0);
+      for (const c of hrp) ret.push(c.charCodeAt(0) & 31);
+      return ret;
+    }
+
+    function convertBits(data, fromBits, toBits, pad) {
+      let acc = 0, bits = 0;
+      const ret = [], maxv = (1 << toBits) - 1;
+      for (const value of data) {
+        acc = (acc << fromBits) | value;
+        bits += fromBits;
+        while (bits >= toBits) {
+          bits -= toBits;
+          ret.push((acc >> bits) & maxv);
+        }
+      }
+      if (pad && bits > 0) ret.push((acc << (toBits - bits)) & maxv);
+      return ret;
+    }
+
+    function encodeBech32m(hrp, witnessProgram) {
+      const version = 1;
+      const data = [version, ...convertBits(witnessProgram, 8, 5, true)];
+      const polymod = bech32Polymod([...bech32HrpExpand(hrp), ...data, 0, 0, 0, 0, 0, 0]) ^ BECH32M_CONST;
+      const checksum = [];
+      for (let i = 0; i < 6; i++) checksum.push((polymod >> (5 * (5 - i))) & 31);
+      return hrp + '1' + [...data, ...checksum].map(d => CHARSET[d]).join('');
+    }
+
+    // ============================================
+    // Demo State Management
+    // ============================================
+
+    class DemoTrail {
+      constructor(privateKeyHex) {
+        this.privateKeyBase = hexToBytes(privateKeyHex);
+        this.publicKeyBase = secp.getPublicKey(this.privateKeyBase, true);
+        this.states = [];
+      }
+
+      genesis(state) {
+        this.states = [state];
+        const P = derivePublicKey(this.publicKeyBase, state);
+        const wp = p2trXonly(P);
+        return {
+          state,
+          witnessProgram: bytesToHex(wp),
+          address: encodeBech32m('tb', wp) // testnet
+        };
+      }
+
+      advance(newState) {
+        if (this.states.length === 0) throw new Error('Must call genesis first');
+        this.states.push(newState);
+        const P = derivePublicKey(this.publicKeyBase, newState);
+        const wp = p2trXonly(P);
+        return {
+          state: newState,
+          witnessProgram: bytesToHex(wp),
+          address: encodeBech32m('tb', wp)
+        };
+      }
+
+      getAll() {
+        return this.states.map((state, i) => {
+          const P = derivePublicKey(this.publicKeyBase, state);
+          const wp = p2trXonly(P);
+          return {
+            index: i,
+            state,
+            witnessProgram: bytesToHex(wp),
+            address: encodeBech32m('tb', wp)
+          };
+        });
+      }
+    }
+
+    // ============================================
+    // UI Rendering
+    // ============================================
+
+    let trail;
+
+    function truncate(str, len = 16) {
+      if (str.length <= len * 2 + 3) return str;
+      return str.slice(0, len) + '...' + str.slice(-len);
+    }
+
+    function renderTrailNode(node, isGenesis, isCurrent) {
+      const classes = ['trail-node'];
+      if (isGenesis) classes.push('genesis');
+      if (isCurrent) classes.push('current');
+
+      let stateDisplay;
+      try {
+        const parsed = JSON.parse(node.state);
+        stateDisplay = JSON.stringify(parsed);
+      } catch {
+        stateDisplay = node.state;
+      }
+
+      return `
+        <div class="${classes.join(' ')}">
+          <div class="node-header">
+            <span class="node-index">${node.index}</span>
+            <div class="node-state">${stateDisplay}</div>
+          </div>
+          <div class="node-details">
+            <div class="node-detail">
+              <label>Witness Program (x-only)</label>
+              <code>${truncate(node.witnessProgram, 12)}</code>
+            </div>
+            <div class="node-detail">
+              <label>P2TR Address</label>
+              <a href="${MEMPOOL_BASE}/address/${node.address}" target="_blank">
+                ${truncate(node.address, 10)}
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderArrow() {
+      return `
+        <div class="trail-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </div>
+      `;
+    }
+
+    function renderTrail() {
+      const nodes = trail.getAll();
+      const container = document.getElementById('trail-chain');
+
+      if (nodes.length === 0) {
+        container.innerHTML = '<div class="loading">No states yet</div>';
+        return;
+      }
+
+      let html = '';
+      nodes.forEach((node, i) => {
+        if (i > 0) html += renderArrow();
+        html += renderTrailNode(node, i === 0, i === nodes.length - 1);
+      });
+
+      container.innerHTML = html;
+    }
+
+    function initDemo() {
+      trail = new DemoTrail(DEMO_PRIVKEY);
+
+      // Set up genesis
+      const genesis = trail.genesis(GENESIS_STATE);
+
+      // Update info card
+      document.getElementById('pubkey-base').textContent = bytesToHex(trail.publicKeyBase);
+      document.getElementById('genesis-address').textContent = genesis.address;
+      document.getElementById('genesis-mempool').href = `${MEMPOOL_BASE}/address/${genesis.address}`;
+
+      // Render trail
+      renderTrail();
+    }
+
+    window.advanceState = function() {
+      const input = document.getElementById('new-state');
+      const newState = input.value.trim();
+
+      if (!newState) {
+        alert('Please enter a state value');
+        return;
+      }
+
+      try {
+        // Try to parse as JSON to validate
+        JSON.parse(newState);
+      } catch {
+        // Allow non-JSON states too
+      }
+
+      try {
+        trail.advance(newState);
+        renderTrail();
+        input.value = '';
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // Initialize on load
+    initDemo();
+  </script>
+</body>
+</html>
