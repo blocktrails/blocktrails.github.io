@@ -330,11 +330,18 @@
       }
       .diagram-row {
         gap: 0.35rem;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+      }
+      .visual-diagram {
+        overflow-x: auto;
+        padding: 1.25rem 1rem;
       }
       .d-box {
-        min-width: 70px;
-        padding: 0.5rem 0.6rem;
-        font-size: 0.75rem;
+        min-width: 65px;
+        padding: 0.4rem 0.5rem;
+        font-size: 0.7rem;
+        flex-shrink: 0;
       }
       .d-arrow {
         font-size: 1rem;
