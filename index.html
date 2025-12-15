@@ -15,6 +15,9 @@
       --border: #30363d;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      overflow-x: hidden;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
       background: var(--bg);
@@ -29,6 +32,7 @@
       margin: 0 auto;
       padding: 4rem 2rem;
       flex: 1;
+      width: 100%;
     }
     h1 {
       font-size: 3rem;
@@ -363,13 +367,11 @@
       }
       .comparison {
         overflow-x: auto;
-        margin-left: -1rem;
-        margin-right: -1rem;
-        padding: 0 1rem;
+        margin: 1.5rem 0 2rem 0;
       }
       .comparison table {
         font-size: 0.75rem;
-        min-width: 480px;
+        min-width: 420px;
       }
       .comparison th, .comparison td {
         padding: 0.6rem 0.5rem;
