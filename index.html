@@ -333,6 +333,9 @@
         flex-wrap: nowrap;
         justify-content: flex-start;
       }
+      .diagram-row:nth-child(2) {
+        justify-content: center;
+      }
       .visual-diagram {
         overflow-x: auto;
         padding: 1.25rem 1rem;
@@ -413,9 +416,9 @@
         <span class="d-arrow">→</span>
         <div class="d-box utxo">UTXO<div class="d-label">funded</div></div>
       </div>
-      <div class="diagram-row">
-        <span class="d-arrow" style="transform: rotate(90deg); margin: 0.5rem 0;">↓</span>
-        <span style="color: var(--muted); font-size: 0.8rem; margin-left: 1rem;">spend</span>
+      <div class="diagram-row" style="flex-direction: column; gap: 0;">
+        <span class="d-arrow">↓</span>
+        <span style="color: var(--muted); font-size: 0.7rem;">spend</span>
       </div>
       <div class="diagram-row">
         <div class="d-box state">State 1<div class="d-label">JSON</div></div>
