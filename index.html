@@ -205,6 +205,98 @@
       font-size: 0.9rem;
       margin-bottom: 0;
     }
+    .version-badge {
+      display: inline-block;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+      font-weight: 500;
+    }
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+      font-size: 0.85rem;
+      margin: 1.5rem 0 2rem 0;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+    .code-block .kw { color: #ff7b72; }
+    .code-block .fn { color: #d2a8ff; }
+    .code-block .str { color: #a5d6ff; }
+    .code-block .cmt { color: var(--muted); }
+    .code-block .var { color: var(--fg); }
+    .visual-diagram {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem 1.5rem;
+      margin-bottom: 3rem;
+      overflow-x: auto;
+    }
+    .diagram-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+    .diagram-row:last-child { margin-bottom: 0; }
+    .d-box {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      text-align: center;
+      min-width: 90px;
+    }
+    .d-box.state { border-color: #a5d6ff; color: #a5d6ff; }
+    .d-box.key { border-color: var(--accent); color: var(--accent); }
+    .d-box.utxo { border-color: #3fb950; color: #3fb950; }
+    .d-arrow {
+      color: var(--muted);
+      font-size: 1.2rem;
+      padding: 0 0.25rem;
+    }
+    .d-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .comparison {
+      margin: 1.5rem 0 2rem 0;
+    }
+    .comparison table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .comparison th, .comparison td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison th {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .comparison td { color: var(--fg); }
+    .comparison tr:last-child td { border-bottom: none; }
+    .comparison .highlight { color: var(--accent); font-weight: 500; }
     footer {
       text-align: center;
       padding: 2rem;
@@ -217,7 +309,7 @@
 </head>
 <body>
   <main>
-    <h1>Blocktrails</h1>
+    <h1>Blocktrails <span class="version-badge">v0.1</span></h1>
     <p class="tagline"><span>Nostr-native</span> state on Bitcoin</p>
 
     <p class="intro">
@@ -226,8 +318,25 @@
       No extra tokens. No sidechains. No new consensus rules.
     </p>
 
-    <div class="diagram">
-      <span class="state">state₀</span> <span class="arrow">→</span> <span class="key">P₀</span> <span class="arrow">→ spend →</span> <span class="state">state₁</span> <span class="arrow">→</span> <span class="key">P₁</span> <span class="arrow">→ spend →</span> <span class="state">state₂</span> <span class="arrow">→</span> <span class="key">P₂</span> <span class="arrow">→ ...</span>
+    <div class="visual-diagram">
+      <div class="diagram-row">
+        <div class="d-box state">State 0<div class="d-label">JSON</div></div>
+        <span class="d-arrow">→</span>
+        <div class="d-box key">Address 0<div class="d-label">P2TR</div></div>
+        <span class="d-arrow">→</span>
+        <div class="d-box utxo">UTXO<div class="d-label">funded</div></div>
+      </div>
+      <div class="diagram-row">
+        <span class="d-arrow" style="transform: rotate(90deg); margin: 0.5rem 0;">↓</span>
+        <span style="color: var(--muted); font-size: 0.8rem; margin-left: 1rem;">spend</span>
+      </div>
+      <div class="diagram-row">
+        <div class="d-box state">State 1<div class="d-label">JSON</div></div>
+        <span class="d-arrow">→</span>
+        <div class="d-box key">Address 1<div class="d-label">P2TR</div></div>
+        <span class="d-arrow">→</span>
+        <div class="d-box utxo">UTXO<div class="d-label">head</div></div>
+      </div>
     </div>
 
     <h2>How It Works</h2>
@@ -242,6 +351,20 @@
       <li data-step="3.">The resulting public key becomes a P2TR output</li>
       <li data-step="4.">To update state, spend to the next derived key</li>
     </ol>
+
+    <div class="code-block">
+<span class="kw">import</span> { <span class="var">Blocktrail</span> } <span class="kw">from</span> <span class="str">'blocktrails'</span>;
+
+<span class="cmt">// Create a trail with your Nostr key</span>
+<span class="kw">const</span> <span class="var">trail</span> = <span class="kw">new</span> <span class="fn">Blocktrail</span>(privateKey);
+
+<span class="cmt">// Commit state → get P2TR address</span>
+<span class="kw">const</span> <span class="var">genesis</span> = trail.<span class="fn">genesis</span>(<span class="str">'{"balance": 1000}'</span>);
+console.<span class="fn">log</span>(genesis.p2trAddress); <span class="cmt">// bc1p...</span>
+
+<span class="cmt">// Advance state → new address</span>
+trail.<span class="fn">advance</span>(<span class="str">'{"balance": 900}'</span>);
+    </div>
 
     <h2>Why Nostr-Native?</h2>
     <p class="spaced">
@@ -270,6 +393,55 @@
       </div>
     </div>
 
+    <h2>Comparison</h2>
+    <p>How Blocktrails compares to other Bitcoin state protocols:</p>
+    <div class="comparison">
+      <table>
+        <tr>
+          <th></th>
+          <th>Blocktrails</th>
+          <th>RGB</th>
+          <th>Taproot Assets</th>
+        </tr>
+        <tr>
+          <td>Complexity</td>
+          <td class="highlight">Minimal</td>
+          <td>High</td>
+          <td>Medium</td>
+        </tr>
+        <tr>
+          <td>Validation</td>
+          <td>Client-side</td>
+          <td>Client-side</td>
+          <td>Universe servers</td>
+        </tr>
+        <tr>
+          <td>State model</td>
+          <td class="highlight">Linear chain</td>
+          <td>DAG</td>
+          <td>Asset tree</td>
+        </tr>
+        <tr>
+          <td>On-chain footprint</td>
+          <td class="highlight">1 P2TR output</td>
+          <td>1 output + commitment</td>
+          <td>1 output + witness</td>
+        </tr>
+        <tr>
+          <td>Key model</td>
+          <td class="highlight">Nostr-native</td>
+          <td>Custom</td>
+          <td>Custom</td>
+        </tr>
+        <tr>
+          <td>Best for</td>
+          <td>Simple state machines</td>
+          <td>Complex contracts</td>
+          <td>Asset issuance</td>
+        </tr>
+      </table>
+    </div>
+
     <h2>The Math</h2>
     <p>State commitment is simple scalar addition:</p>
     <div class="equation">
@@ -295,6 +467,7 @@
 
     <div class="cta">
       <a href="https://blocktrails.org/spec/" class="primary">Read the Spec</a>
+      <a href="https://blocktrails.org/spec/profiles.html" class="secondary">Profiles (MRC20)</a>
       <a href="https://blocktrails.org/demo/" class="secondary">Live Demo</a>
       <a href="https://github.com/blocktrails" class="secondary">GitHub</a>
     </div>
@@ -302,8 +475,8 @@
     <h2>FAQ</h2>
     <div class="faq">
       <div class="faq-item">
-        <h3>How is this different from Ordinals or Inscriptions?</h3>
-        <p>Ordinals inscribe static data. Blocktrails track evolving state with a verifiable history. Each transition is linked to the previous one.</p>
+        <h3>How is this different from RGB or Taproot Assets?</h3>
+        <p>RGB and Taproot Assets are full protocols with complex validation layers. Blocktrails is a minimal primitive — just key tweaking and spend chains. You build your own rules on top. Think of it as the simplest possible state anchoring.</p>
       </div>
       <div class="faq-item">
         <h3>Where is the state stored?</h3>
@@ -316,6 +489,10 @@
       <div class="faq-item">
         <h3>Do I need to run a full node?</h3>
         <p>No. Blocktrails are SPV-compatible. You only need output keys and merkle inclusion proofs.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Is there a reference implementation?</h3>
+        <p>Yes. <code>npm install blocktrails</code> — JavaScript/Node.js with full test suite. See the <a href="https://github.com/blocktrails/blocktrails" style="color: var(--accent);">GitHub repo</a>.</p>
       </div>
     </div>
 
