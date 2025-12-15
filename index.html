@@ -25,7 +25,7 @@
       flex-direction: column;
     }
     main {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       padding: 4rem 2rem;
       flex: 1;
@@ -39,9 +39,18 @@
     .tagline {
       font-size: 1.25rem;
       color: var(--muted);
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
     }
     .tagline span {
+      color: var(--accent);
+    }
+    .intro {
+      font-size: 1.1rem;
+      color: var(--fg);
+      margin-bottom: 3rem;
+      line-height: 1.7;
+    }
+    .intro strong {
       color: var(--accent);
     }
     .diagram {
@@ -59,16 +68,28 @@
     .diagram .key { color: #f7931a; }
     .diagram .arrow { color: #7d8590; }
     h2 {
-      font-size: 1.1rem;
+      font-size: 1.25rem;
       font-weight: 600;
       margin-bottom: 1rem;
+      margin-top: 2.5rem;
       color: var(--fg);
+    }
+    h2:first-of-type {
+      margin-top: 0;
+    }
+    p {
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    p.spaced {
+      margin-bottom: 2rem;
     }
     .features {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.5rem;
       margin-bottom: 3rem;
+      margin-top: 1.5rem;
     }
     .feature {
       background: var(--code-bg);
@@ -85,12 +106,14 @@
     .feature p {
       font-size: 0.85rem;
       color: var(--muted);
+      margin-bottom: 0;
     }
     .cta {
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
       margin-bottom: 3rem;
+      margin-top: 2rem;
     }
     .cta a {
       display: inline-flex;
@@ -120,11 +143,68 @@
       padding: 1.5rem;
       font-family: 'SF Mono', Monaco, monospace;
       font-size: 0.9rem;
-      margin-bottom: 3rem;
+      margin-bottom: 1.5rem;
+      margin-top: 1rem;
     }
     .equation .comment { color: var(--muted); }
     .equation .var { color: #a5d6ff; }
     .equation .op { color: var(--fg); }
+    .how-list {
+      list-style: none;
+      margin: 1.5rem 0 2rem 0;
+    }
+    .how-list li {
+      color: var(--muted);
+      padding: 0.5rem 0;
+      padding-left: 2rem;
+      position: relative;
+    }
+    .how-list li::before {
+      content: attr(data-step);
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .usecases {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin: 1rem 0 2rem 0;
+    }
+    .usecases span {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .usecases span::after {
+      content: "·";
+      margin-left: 1rem;
+      color: var(--border);
+    }
+    .usecases span:last-child::after {
+      content: "";
+    }
+    .faq {
+      margin-top: 1.5rem;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+    }
+    .faq-item:last-child {
+      border-bottom: none;
+    }
+    .faq-item h3 {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--fg);
+      margin-bottom: 0.5rem;
+    }
+    .faq-item p {
+      font-size: 0.9rem;
+      margin-bottom: 0;
+    }
     footer {
       text-align: center;
       padding: 2rem;
@@ -140,44 +220,77 @@
     <h1>Blocktrails</h1>
     <p class="tagline"><span>Nostr-native</span> state on Bitcoin</p>
 
+    <p class="intro">
+      Blocktrails let you anchor <strong>evolving state</strong> to Bitcoin using nothing but keys and hashes.
+      Each state update creates a new output. Bitcoin's UTXO model guarantees only one valid history exists.
+      No extra tokens. No sidechains. No new consensus rules.
+    </p>
+
     <div class="diagram">
       <span class="state">state₀</span> <span class="arrow">→</span> <span class="key">P₀</span> <span class="arrow">→ spend →</span> <span class="state">state₁</span> <span class="arrow">→</span> <span class="key">P₁</span> <span class="arrow">→ spend →</span> <span class="state">state₂</span> <span class="arrow">→</span> <span class="key">P₂</span> <span class="arrow">→ ...</span>
     </div>
 
-    <h2>What is a Blocktrail?</h2>
-    <p style="color: var(--muted); margin-bottom: 2rem;">
-      A sequence of P2TR outputs where each output key commits to application state.
-      Spending an output advances the trail. Bitcoin enforces linearity.
-      No extra tokens. No sidechains. Just keys and hashes.
+    <h2>How It Works</h2>
+    <p>
+      Your private key plus a hash of the current state determines the output key.
+      When state changes, you spend to a new key derived from the new state.
+      Anyone with the state history can verify the chain.
+    </p>
+    <ol class="how-list">
+      <li data-step="1.">Hash your state to get a tweak value</li>
+      <li data-step="2.">Add the tweak to your base private key</li>
+      <li data-step="3.">The resulting public key becomes a P2TR output</li>
+      <li data-step="4.">To update state, spend to the next derived key</li>
+    </ol>
+
+    <h2>Why Nostr-Native?</h2>
+    <p class="spaced">
+      Blocktrails use full secp256k1 keys internally — the same keys Nostr uses.
+      Your existing Nostr identity can control a Blocktrail directly.
+      No awkward key conversions. No parity headaches.
+      The x-only encoding required by Taproot is handled only at the Bitcoin boundary.
     </p>
 
     <div class="features">
       <div class="feature">
-        <h3>Nostr-native</h3>
-        <p>Full secp256k1 keys internally. Your Nostr identity works directly.</p>
-      </div>
-      <div class="feature">
         <h3>Minimal</h3>
-        <p>One P2TR output per state update. Key-path spends only.</p>
+        <p>One P2TR output per state update. Key-path spends only. No scripts.</p>
       </div>
       <div class="feature">
-        <h3>SPV-compatible</h3>
+        <h3>SPV-Compatible</h3>
         <p>Verify with merkle proofs. No full node required.</p>
       </div>
       <div class="feature">
         <h3>Composable</h3>
-        <p>A primitive, not a protocol. Build anything on top.</p>
+        <p>A primitive, not a protocol. Define your own state format and rules.</p>
+      </div>
+      <div class="feature">
+        <h3>No Extra Tokens</h3>
+        <p>Just Bitcoin. No wrapped assets, no bridges, no new consensus.</p>
       </div>
     </div>
 
     <h2>The Math</h2>
+    <p>State commitment is simple scalar addition:</p>
     <div class="equation">
-      <span class="comment"># commitment</span><br>
+      <span class="comment"># derive key for state</span><br>
       <span class="var">t</span> <span class="op">= SHA256(state) mod n</span><br>
       <span class="var">d</span> <span class="op">= d_base + t</span><br>
       <span class="var">P</span> <span class="op">= d·G</span><br><br>
-      <span class="comment"># on-chain</span><br>
+      <span class="comment"># Bitcoin output uses x-coordinate</span><br>
       <span class="var">output</span> <span class="op">= x(P)</span>
+    </div>
+
+    <h2>Use Cases</h2>
+    <p>Blocktrails are a building block. Applications define what state means:</p>
+    <div class="usecases">
+      <span>Token ledgers</span>
+      <span>Version control</span>
+      <span>Voting systems</span>
+      <span>Audit trails</span>
+      <span>Game state</span>
+      <span>IoT logs</span>
+      <span>Any linear state machine</span>
     </div>
 
     <div class="cta">
@@ -185,10 +298,26 @@
       <a href="https://github.com/blocktrails" class="secondary">GitHub</a>
     </div>
 
-    <h2>Use Cases</h2>
-    <p style="color: var(--muted);">
-      Token ledgers · Version control · Voting systems · Audit trails · Any linear state machine
-    </p>
+    <h2>FAQ</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <h3>How is this different from Ordinals or Inscriptions?</h3>
+        <p>Ordinals inscribe static data. Blocktrails track evolving state with a verifiable history. Each transition is linked to the previous one.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Where is the state stored?</h3>
+        <p>Off-chain. Bitcoin only stores the commitment (the output key). You need the actual state bytes to verify, but they can live anywhere — git repos, IPFS, Nostr relays.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What prevents invalid state transitions?</h3>
+        <p>Client-side validation. Verifiers check that each transition follows the rules your application defines. Bitcoin enforces ordering and prevents double-spends.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Do I need to run a full node?</h3>
+        <p>No. Blocktrails are SPV-compatible. You only need output keys and merkle inclusion proofs.</p>
+      </div>
+    </div>
+
   </main>
 
   <footer>
