@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blocktrails</title>
+  <meta name="description" content="Nostr-native output-key commitment chaining on Bitcoin">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --muted: #7d8590;
+      --accent: #f7931a;
+      --code-bg: #161b22;
+      --border: #30363d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+      flex: 1;
+    }
+    h1 {
+      font-size: 3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .tagline {
+      font-size: 1.25rem;
+      color: var(--muted);
+      margin-bottom: 3rem;
+    }
+    .tagline span {
+      color: var(--accent);
+    }
+    .diagram {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+      font-size: 0.95rem;
+      margin-bottom: 3rem;
+      overflow-x: auto;
+      color: var(--muted);
+    }
+    .diagram .state { color: #a5d6ff; }
+    .diagram .key { color: #f7931a; }
+    .diagram .arrow { color: #7d8590; }
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--fg);
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .feature {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+    .feature h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+    .feature p {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+    .cta a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: opacity 0.15s;
+    }
+    .cta a:hover { opacity: 0.85; }
+    .cta .primary {
+      background: var(--accent);
+      color: #000;
+    }
+    .cta .secondary {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      color: var(--fg);
+    }
+    .equation {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.9rem;
+      margin-bottom: 3rem;
+    }
+    .equation .comment { color: var(--muted); }
+    .equation .var { color: #a5d6ff; }
+    .equation .op { color: var(--fg); }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Blocktrails</h1>
+    <p class="tagline"><span>Nostr-native</span> state on Bitcoin</p>
+
+    <div class="diagram">
+      <span class="state">state₀</span> <span class="arrow">→</span> <span class="key">P₀</span> <span class="arrow">→ spend →</span> <span class="state">state₁</span> <span class="arrow">→</span> <span class="key">P₁</span> <span class="arrow">→ spend →</span> <span class="state">state₂</span> <span class="arrow">→</span> <span class="key">P₂</span> <span class="arrow">→ ...</span>
+    </div>
+
+    <h2>What is a Blocktrail?</h2>
+    <p style="color: var(--muted); margin-bottom: 2rem;">
+      A sequence of P2TR outputs where each output key commits to application state.
+      Spending an output advances the trail. Bitcoin enforces linearity.
+      No extra tokens. No sidechains. Just keys and hashes.
+    </p>
+
+    <div class="features">
+      <div class="feature">
+        <h3>Nostr-native</h3>
+        <p>Full secp256k1 keys internally. Your Nostr identity works directly.</p>
+      </div>
+      <div class="feature">
+        <h3>Minimal</h3>
+        <p>One P2TR output per state update. Key-path spends only.</p>
+      </div>
+      <div class="feature">
+        <h3>SPV-compatible</h3>
+        <p>Verify with merkle proofs. No full node required.</p>
+      </div>
+      <div class="feature">
+        <h3>Composable</h3>
+        <p>A primitive, not a protocol. Build anything on top.</p>
+      </div>
+    </div>
+
+    <h2>The Math</h2>
+    <div class="equation">
+      <span class="comment"># commitment</span><br>
+      <span class="var">t</span> <span class="op">= SHA256(state) mod n</span><br>
+      <span class="var">d</span> <span class="op">= d_base + t</span><br>
+      <span class="var">P</span> <span class="op">= d·G</span><br><br>
+      <span class="comment"># on-chain</span><br>
+      <span class="var">output</span> <span class="op">= x(P)</span>
+    </div>
+
+    <div class="cta">
+      <a href="https://github.com/blocktrails/spec" class="primary">Read the Spec</a>
+      <a href="https://github.com/blocktrails" class="secondary">GitHub</a>
+    </div>
+
+    <h2>Use Cases</h2>
+    <p style="color: var(--muted);">
+      Token ledgers · Version control · Voting systems · Audit trails · Any linear state machine
+    </p>
+  </main>
+
+  <footer>
+    <p>Public domain · <a href="https://github.com/blocktrails">github.com/blocktrails</a></p>
+  </footer>
+</body>
+</html>
