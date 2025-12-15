@@ -579,6 +579,10 @@ trail.<span class="fn">advance</span>(<span class="str">'{"balance": 900}'</span
         <p>Client-side validation. Verifiers check that each transition follows the rules your application defines. Bitcoin enforces ordering and prevents double-spends.</p>
       </div>
       <div class="faq-item">
+        <h3>Can I define my own state format?</h3>
+        <p>Yes — that's the point. Blocktrails is a primitive, not a protocol. The spec defines <a href="https://blocktrails.org/spec/profiles.html" style="color: var(--accent);">Profiles</a> for application-specific rules. MRC20 defines fungible tokens. Monochrome defines generic state machines. You can create your own profile for voting, attestations, game state — anything that fits a linear state model. The base layer never changes.</p>
+      </div>
+      <div class="faq-item">
         <h3>Do I need to run a full node?</h3>
         <p>No. Blocktrails are SPV-compatible. You only need output keys and merkle inclusion proofs.</p>
       </div>
