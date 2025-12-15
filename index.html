@@ -305,6 +305,86 @@
       border-top: 1px solid var(--border);
     }
     footer a { color: var(--muted); }
+
+    /* Mobile responsive */
+    @media (max-width: 600px) {
+      main {
+        padding: 2rem 1rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .version-badge {
+        display: block;
+        margin: 0.5rem 0 0 0;
+        width: fit-content;
+      }
+      .tagline {
+        font-size: 1.1rem;
+      }
+      .intro {
+        font-size: 1rem;
+      }
+      .visual-diagram {
+        padding: 1.25rem 1rem;
+      }
+      .diagram-row {
+        gap: 0.35rem;
+      }
+      .d-box {
+        min-width: 70px;
+        padding: 0.5rem 0.6rem;
+        font-size: 0.75rem;
+      }
+      .d-arrow {
+        font-size: 1rem;
+        padding: 0 0.15rem;
+      }
+      .d-label {
+        font-size: 0.6rem;
+      }
+      .code-block {
+        padding: 1rem;
+        font-size: 0.75rem;
+      }
+      .features {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .comparison {
+        overflow-x: auto;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        padding: 0 1rem;
+      }
+      .comparison table {
+        font-size: 0.75rem;
+        min-width: 480px;
+      }
+      .comparison th, .comparison td {
+        padding: 0.6rem 0.5rem;
+      }
+      .cta {
+        flex-direction: column;
+      }
+      .cta a {
+        justify-content: center;
+        width: 100%;
+      }
+      .equation {
+        font-size: 0.8rem;
+        padding: 1rem;
+      }
+      .how-list li {
+        font-size: 0.9rem;
+      }
+      .faq-item h3 {
+        font-size: 0.9rem;
+      }
+      .faq-item p {
+        font-size: 0.85rem;
+      }
+    }
   </style>
 </head>
 <body>
