@@ -448,15 +448,14 @@
 
     <h2>How It Works</h2>
     <p>
-      Your private key plus a hash of the current state determines the output key.
-      When state changes, you spend to a new key derived from the new state.
+      Each state transition adds a tweak to the previous key, forming a cryptographic chain that mirrors the spend chain.
       Anyone with the state history can verify the chain.
     </p>
     <ol class="how-list">
       <li data-step="1.">Hash your state to get a tweak value</li>
-      <li data-step="2.">Add the tweak to your base private key</li>
+      <li data-step="2.">Add the tweak to your previous private key</li>
       <li data-step="3.">The resulting public key becomes a P2TR output</li>
-      <li data-step="4.">To update state, spend to the next derived key</li>
+      <li data-step="4.">To update state, spend and chain to the next key</li>
     </ol>
 
     <div class="code-block">
@@ -550,14 +549,14 @@ trail.<span class="fn">advance</span>(<span class="str">'{"balance": 900}'</span
     </div>
 
     <h2>The Math</h2>
-    <p>State commitment is simple scalar addition:</p>
+    <p>State commitment is chained scalar addition:</p>
     <div class="equation">
-      <span class="comment"># derive key for state</span><br>
-      <span class="var">t</span> <span class="op">= SHA256(state) mod n</span><br>
-      <span class="var">d</span> <span class="op">= d_base + t</span><br>
-      <span class="var">P</span> <span class="op">= d·G</span><br><br>
+      <span class="comment"># derive key for state i</span><br>
+      <span class="var">tᵢ</span> <span class="op">= SHA256(stateᵢ) mod n</span><br>
+      <span class="var">dᵢ</span> <span class="op">= dᵢ₋₁ + tᵢ</span><br>
+      <span class="var">Pᵢ</span> <span class="op">= Pᵢ₋₁ + tᵢ·G</span><br><br>
       <span class="comment"># Bitcoin output uses x-coordinate</span><br>
-      <span class="var">output</span> <span class="op">= x(P)</span>
+      <span class="var">output</span> <span class="op">= x(Pᵢ)</span>
     </div>
 
     <h2>Use Cases</h2>
