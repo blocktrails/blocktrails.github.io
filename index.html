@@ -664,7 +664,7 @@
 
         <div class="how-grid">
           <ol class="steps">
-            <li class="step"><span class="step-number">1</span><h3>Hash your state to get a tweak value</h3></li>
+            <li class="step"><span class="step-number">1</span><h3>Hash your state with the previous public key to get a tweak value</h3></li>
             <li class="step"><span class="step-number">2</span><h3>Add the tweak to your previous private key</h3></li>
             <li class="step"><span class="step-number">3</span><h3>The resulting public key becomes a P2TR output</h3></li>
             <li class="step"><span class="step-number">4</span><h3>To update state, spend and chain to the next key</h3></li>
@@ -678,8 +678,9 @@
             <div class="math-body">
               <p class="math-caption">State commitment is chained scalar addition:</p>
               <div class="formula">
-                <div class="formula-row formula-op"># derive key for state i</div>
-                <div class="formula-row"><span class="formula-var">tᵢ</span><span class="formula-op">=</span><span class="formula-value">SHA256(stateᵢ) mod n</span></div>
+                <div class="formula-row formula-op"># derive key for state i (BIP-341 TapTweak)</div>
+                <div class="formula-row"><span class="formula-var">hᵢ</span><span class="formula-op">=</span><span class="formula-value">SHA256(stateᵢ)</span></div>
+                <div class="formula-row"><span class="formula-var">tᵢ</span><span class="formula-op">=</span><span class="formula-value">TapTweak(x(Pᵢ₋₁) || hᵢ) mod n</span></div>
                 <div class="formula-row"><span class="formula-var">dᵢ</span><span class="formula-op">=</span><span class="formula-value">dᵢ₋₁ + tᵢ</span></div>
                 <div class="formula-row"><span class="formula-var">Pᵢ</span><span class="formula-op">=</span><span class="formula-value">Pᵢ₋₁ + tᵢ·G</span></div>
                 <div class="formula-row formula-op"># Bitcoin output uses x-coordinate</div>
@@ -752,7 +753,7 @@ trail.<span class="fn">advance</span>(<span class="str">'{"balance": 900}'</span
             <thead><tr><th scope="col"></th><th scope="col" class="ours">Blocktrails</th><th scope="col">RGB</th><th scope="col">Taproot Assets</th></tr></thead>
             <tbody>
               <tr><th scope="row">Complexity</th><td class="ours highlight">Minimal</td><td>High</td><td>Medium</td></tr>
-              <tr><th scope="row">Validation</th><td class="ours">Client-side</td><td>Client-side</td><td>Universe servers</td></tr>
+              <tr><th scope="row">Validation</th><td class="ours">Client-side</td><td>Client-side</td><td>Client-side (proof data via Universes)</td></tr>
               <tr><th scope="row">State model</th><td class="ours highlight">Linear chain</td><td>DAG</td><td>Asset tree</td></tr>
               <tr><th scope="row">On-chain footprint</th><td class="ours highlight">1 P2TR output</td><td>1 output + commitment</td><td>1 output + witness</td></tr>
               <tr><th scope="row">Key model</th><td class="ours highlight">Nostr-native</td><td>Custom</td><td>Custom</td></tr>
@@ -823,7 +824,7 @@ trail.<span class="fn">advance</span>(<span class="str">'{"balance": 900}'</span
           <a class="usecase-card" href="https://blocktrails.github.io/git-mark/">
             <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 7v10M8 7c4 0 2 5 8 5"/></svg></span><span class="usecase-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span></div>
             <h3>Git-mark</h3>
-            <p>Anchor git commits to Bitcoin. Commit hash as tweak, TXO URIs.</p>
+            <p>Anchor git commits to Bitcoin. Commit hash in the tweak, TXO URIs.</p>
           </a>
         </div>
       </div>
