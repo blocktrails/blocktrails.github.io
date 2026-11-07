@@ -31,27 +31,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --bg: #f7f8f3;
-      --surface: #ffffff;
-      --surface-warm: #fffdf8;
-      --ink: #17211b;
-      --muted: #687269;
-      --soft: #667066;
-      --accent: #ed7c2c;
-      --accent-dark: #b95216;
-      --accent-soft: #fff0e3;
-      --mint: #e8f0e8;
-      --mint-deep: #cfe0d2;
-      --line: #dde3da;
-      --dark: #18251e;
-      --display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
-      --shadow: 0 30px 80px rgba(36, 51, 40, 0.09), 0 3px 12px rgba(36, 51, 40, 0.04);
-    }
+  <link rel="stylesheet" href="/site.css">
 
+  <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; scroll-padding-top: 100px; }
     body {
@@ -68,8 +50,6 @@
     button, a { -webkit-tap-highlight-color: transparent; }
     button { color: inherit; }
     svg { display: block; }
-    ::selection { background: #fbd4b6; color: var(--ink); }
-    :focus-visible { outline: 3px solid rgba(237, 124, 44, 0.4); outline-offset: 4px; }
 
     .skip-link {
       position: fixed;
@@ -84,24 +64,9 @@
       transform: translateY(-150%);
     }
     .skip-link:focus { transform: translateY(0); }
-    .container { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
     .mono { font-family: var(--mono); }
     .accent { color: var(--accent); }
 
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid transparent;
-      background: rgba(247, 248, 243, 0.88);
-      backdrop-filter: blur(18px);
-      transition: border-color 180ms ease, box-shadow 180ms ease;
-    }
-    .site-header.scrolled { border-color: var(--line); box-shadow: 0 4px 20px rgba(23, 33, 27, 0.03); }
-    .navbar { height: 82px; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
-    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; flex-shrink: 0; }
-    .brand-mark { width: 35px; height: 35px; }
-    .brand-name { font-family: var(--display); font-size: 22px; font-weight: 800; letter-spacing: -0.045em; }
     .version {
       margin-left: 2px;
       padding: 3px 7px;
@@ -215,7 +180,6 @@
       color: var(--accent-dark);
     }
     .eyebrow-icon svg { width: 12px; height: 12px; }
-    h1, h2, h3 { font-family: var(--display); }
     h1 {
       max-width: 650px;
       font-size: clamp(58px, 6.1vw, 86px);
@@ -512,10 +476,6 @@
     }
 
     @media (max-width: 600px) {
-      .container { width: min(1200px, calc(100% - 36px)); }
-      .navbar { height: 72px; }
-      .brand-name { font-size: 20px; }
-      .brand-mark { width: 31px; height: 31px; }
       .version { display: none; }
       .mobile-menu { top: 71px; }
       .hero { padding: 45px 0 35px; }

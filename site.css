@@ -1,0 +1,81 @@
+/* Shared Blocktrails theme: colours, fonts and site header.
+   Loaded by the landing page and every sub-page at /site.css. */
+:root {
+  --bg: #f7f8f3;
+  --surface: #ffffff;
+  --surface-warm: #fffdf8;
+  --ink: #17211b;
+  --muted: #5d685f;
+  --soft: #667066;
+  --accent: #ed7c2c;
+  --accent-dark: #b95216;
+  --accent-soft: #fff0e3;
+  --mint: #e8f0e8;
+  --mint-deep: #cfe0d2;
+  --line: #dde3da;
+  --dark: #18251e;
+  --display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  --shadow: 0 30px 80px rgba(36, 51, 40, 0.09), 0 3px 12px rgba(36, 51, 40, 0.04);
+
+  /* Names used by the sub-pages */
+  --fg: var(--ink);
+  --border: var(--line);
+  --code-bg: #eef1ea;
+  --code-fg: #334a39;
+  --card-bg: var(--surface);
+  --on-accent: #ffffff;
+  --green: #2f7a45;
+  --red: #c0362c;
+  --purple: #6b4fa8;
+  --success: #2f7a45;
+  --warning: #96650a;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--display); }
+::selection { background: #fbd4b6; color: var(--ink); }
+:focus-visible { outline: 3px solid rgba(237, 124, 44, 0.4); outline-offset: 4px; }
+
+.container { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid transparent;
+  background: rgba(247, 248, 243, 0.88);
+  backdrop-filter: blur(18px);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.site-header.scrolled, .site-header.static { border-color: var(--line); }
+.site-header.scrolled { box-shadow: 0 4px 20px rgba(23, 33, 27, 0.03); }
+.navbar { height: 82px; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+.brand { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); text-decoration: none; flex-shrink: 0; }
+.brand:hover { text-decoration: none; }
+.brand-mark { display: block; width: 35px; height: 35px; }
+.brand-name { font-family: var(--display); font-size: 22px; font-weight: 800; letter-spacing: -0.045em; }
+
+/* Sub-page navigation (the landing page has its own menu) */
+.site-nav { display: flex; align-items: center; gap: 26px; }
+.site-nav a { color: #4f5a51; font-family: var(--body); font-size: 14px; font-weight: 500; text-decoration: none; white-space: nowrap; }
+.site-nav a:hover { color: var(--accent-dark); text-decoration: none; }
+.site-nav a[aria-current="page"] { color: var(--accent-dark); font-weight: 600; }
+
+@media (max-width: 600px) {
+  .container { width: min(1200px, calc(100% - 36px)); }
+  .navbar { height: 72px; }
+  .brand-name { font-size: 20px; }
+  .brand-mark { width: 31px; height: 31px; }
+  .site-nav { gap: 15px; }
+  .site-nav a { font-size: 13px; }
+}
+@media (max-width: 460px) {
+  .site-nav-page .brand-name { display: none; }
+}
