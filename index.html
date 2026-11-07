@@ -3,463 +3,744 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blocktrails</title>
+  <title>Blocktrails — Nostr-native state on Bitcoin</title>
   <meta name="description" content="Nostr-native output-key commitment chaining on Bitcoin">
+  <meta name="theme-color" content="#f7f8f3">
+  <link rel="canonical" href="https://blocktrails.org/">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <!-- Open Graph -->
   <meta property="og:title" content="Blocktrails — Nostr-native state anchoring on Bitcoin">
   <meta property="og:description" content="Anchor evolving state to Bitcoin using nothing but keys and hashes. A minimal primitive for tokens, audit trails, and any linear state machine.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://blocktrails.org">
-  <meta property="og:image" content="https://blocktrails.org/blocktrails.jpeg">
+  <meta property="og:url" content="https://blocktrails.org/">
+  <meta property="og:site_name" content="Blocktrails">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://blocktrails.org/blocktrails-og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Blocktrails: Nostr-native state on Bitcoin">
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Blocktrails — Nostr-native state anchoring on Bitcoin">
   <meta name="twitter:description" content="Nostr-native state anchoring on Bitcoin. A primitive you extend — define tokens, voting, attestations through Profiles.">
-  <meta name="twitter:image" content="https://blocktrails.org/blocktrails.jpeg">
+  <meta name="twitter:image" content="https://blocktrails.org/blocktrails-og.png">
+  <meta name="twitter:image:alt" content="Blocktrails: Nostr-native state on Bitcoin">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg: #0d1117;
-      --fg: #e6edf3;
-      --muted: #7d8590;
-      --accent: #f7931a;
-      --code-bg: #161b22;
-      --border: #30363d;
+      --bg: #f7f8f3;
+      --surface: #ffffff;
+      --surface-warm: #fffdf8;
+      --ink: #17211b;
+      --muted: #687269;
+      --soft: #667066;
+      --accent: #ed7c2c;
+      --accent-dark: #b95216;
+      --accent-soft: #fff0e3;
+      --mint: #e8f0e8;
+      --mint-deep: #cfe0d2;
+      --line: #dde3da;
+      --dark: #18251e;
+      --display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+      --shadow: 0 30px 80px rgba(36, 51, 40, 0.09), 0 3px 12px rgba(36, 51, 40, 0.04);
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      overflow-x: hidden;
-    }
+    html { scroll-behavior: smooth; scroll-padding-top: 100px; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      overflow-x: hidden;
       background: var(--bg);
-      color: var(--fg);
+      color: var(--ink);
+      font-family: var(--body);
       line-height: 1.6;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
     }
-    main {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 4rem 2rem;
-      flex: 1;
-      width: 100%;
-    }
-    h1 {
-      font-size: 3rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.02em;
-    }
-    .tagline {
-      font-size: 1.25rem;
-      color: var(--muted);
-      margin-bottom: 2rem;
-    }
-    .tagline span {
-      color: var(--accent);
-    }
-    .intro {
-      font-size: 1.1rem;
-      color: var(--fg);
-      margin-bottom: 3rem;
-      line-height: 1.7;
-    }
-    .intro strong {
-      color: var(--accent);
-    }
-    .diagram {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
+    body.menu-open { overflow: hidden; }
+    a { color: inherit; }
+    button, input { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    svg { display: block; }
+    ::selection { background: #fbd4b6; color: var(--ink); }
+    :focus-visible { outline: 3px solid rgba(237, 124, 44, 0.4); outline-offset: 4px; }
+
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 1000;
+      padding: 10px 16px;
       border-radius: 8px;
-      padding: 1.5rem;
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-      font-size: 0.95rem;
-      margin-bottom: 3rem;
-      overflow-x: auto;
-      color: var(--muted);
+      background: var(--ink);
+      color: white;
+      text-decoration: none;
+      transform: translateY(-150%);
     }
-    .diagram .state { color: #a5d6ff; }
-    .diagram .key { color: #f7931a; }
-    .diagram .arrow { color: #7d8590; }
-    h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      margin-top: 2.5rem;
-      color: var(--fg);
+    .skip-link:focus { transform: translateY(0); }
+    .container { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
+    .mono { font-family: var(--mono); }
+    .accent { color: var(--accent); }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid transparent;
+      background: rgba(247, 248, 243, 0.88);
+      backdrop-filter: blur(18px);
+      transition: border-color 180ms ease, box-shadow 180ms ease;
     }
-    h2:first-of-type {
-      margin-top: 0;
-    }
-    p {
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-    p.spaced {
-      margin-bottom: 2rem;
-    }
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3rem;
-      margin-top: 1.5rem;
-    }
-    .feature {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.25rem;
-    }
-    .feature h3 {
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: var(--accent);
-    }
-    .feature p {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 0;
-    }
-    .cta {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 3rem;
-      margin-top: 2rem;
-    }
-    .cta a {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
+    .site-header.scrolled { border-color: var(--line); box-shadow: 0 4px 20px rgba(23, 33, 27, 0.03); }
+    .navbar { height: 82px; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; flex-shrink: 0; }
+    .brand-mark { width: 35px; height: 35px; }
+    .brand-name { font-family: var(--display); font-size: 22px; font-weight: 800; letter-spacing: -0.045em; }
+    .version {
+      margin-left: 2px;
+      padding: 3px 7px;
+      border: 1px solid var(--line);
       border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+    .nav-links { display: flex; align-items: center; gap: 30px; margin-left: auto; }
+    .nav-links a {
+      position: relative;
+      white-space: nowrap;
+      color: #4f5a51;
+      font-size: 14px;
       font-weight: 500;
       text-decoration: none;
-      font-size: 0.95rem;
-      transition: opacity 0.15s;
     }
-    .cta a:hover { opacity: 0.85; }
-    .cta .primary {
-      background: var(--accent);
-      color: #000;
-    }
-    .cta .secondary {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      color: var(--fg);
-    }
-    .equation {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.5rem;
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 0.9rem;
-      margin-bottom: 1.5rem;
-      margin-top: 1rem;
-    }
-    .equation .comment { color: var(--muted); }
-    .equation .var { color: #a5d6ff; }
-    .equation .op { color: var(--fg); }
-    .how-list {
-      list-style: none;
-      margin: 1.5rem 0 2rem 0;
-    }
-    .how-list li {
-      color: var(--muted);
-      padding: 0.5rem 0;
-      padding-left: 2rem;
-      position: relative;
-    }
-    .how-list li::before {
-      content: attr(data-step);
+    .nav-links a::after {
+      content: '';
       position: absolute;
+      right: 0;
+      bottom: -6px;
       left: 0;
-      color: var(--accent);
-      font-weight: 600;
-      font-size: 0.9rem;
+      height: 1px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 180ms ease;
     }
-    .usecases {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 1rem;
-      margin: 1rem 0 2rem 0;
-    }
-    .usecases span {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-    .usecases span::after {
-      content: "·";
-      margin-left: 1rem;
-      color: var(--border);
-    }
-    .usecases span:last-child::after {
-      content: "";
-    }
-    .faq {
-      margin-top: 1.5rem;
-    }
-    .faq-item {
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 0;
-    }
-    .faq-item:last-child {
-      border-bottom: none;
-    }
-    .faq-item h3 {
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--fg);
-      margin-bottom: 0.5rem;
-    }
-    .faq-item p {
-      font-size: 0.9rem;
-      margin-bottom: 0;
-    }
-    .version-badge {
-      display: inline-block;
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 0.75rem;
-      padding: 0.25rem 0.6rem;
-      border-radius: 999px;
-      margin-left: 0.75rem;
-      vertical-align: middle;
-      font-weight: 500;
-    }
-    .code-block {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.25rem;
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-      font-size: 0.85rem;
-      margin: 1.5rem 0 2rem 0;
-      overflow-x: auto;
-      line-height: 1.5;
-    }
-    .code-block .kw { color: #ff7b72; }
-    .code-block .fn { color: #d2a8ff; }
-    .code-block .str { color: #a5d6ff; }
-    .code-block .cmt { color: var(--muted); }
-    .code-block .var { color: var(--fg); }
-    .visual-diagram {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 2rem 1.5rem;
-      margin-bottom: 3rem;
-      overflow-x: auto;
-    }
-    .diagram-row {
-      display: flex;
+    .nav-links a:hover { color: var(--ink); }
+    .nav-links a:hover::after { transform: scaleX(1); transform-origin: left; }
+    .nav-actions { display: flex; align-items: center; gap: 18px; }
+    .github-link { display: inline-flex; color: var(--ink); }
+    .github-link svg { width: 21px; height: 21px; }
+    .button {
+      display: inline-flex;
+      min-height: 50px;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.75rem;
+      gap: 10px;
+      padding: 0 21px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
     }
-    .diagram-row:last-child { margin-bottom: 0; }
-    .d-box {
-      background: var(--bg);
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      padding: 0.6rem 1rem;
-      font-family: monospace;
-      font-size: 0.85rem;
-      text-align: center;
-      min-width: 90px;
+    .button:hover { transform: translateY(-2px); }
+    .button svg { width: 17px; height: 17px; flex-shrink: 0; }
+    .button-dark { background: var(--ink); color: white; box-shadow: 0 6px 16px rgba(23, 33, 27, 0.12); }
+    .button-dark:hover { background: #293a30; box-shadow: 0 9px 22px rgba(23, 33, 27, 0.16); }
+    .button-light { border-color: var(--line); background: rgba(255, 255, 255, 0.7); color: var(--ink); }
+    .button-light:hover { border-color: #bdc8bc; background: white; }
+    .button-small { min-height: 41px; padding-inline: 17px; border-radius: 8px; font-size: 13px; }
+    .menu-toggle {
+      display: none;
+      width: 42px;
+      height: 42px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: white;
+      cursor: pointer;
     }
-    .d-box.state { border-color: #a5d6ff; color: #a5d6ff; }
-    .d-box.key { border-color: var(--accent); color: var(--accent); }
-    .d-box.utxo { border-color: #3fb950; color: #3fb950; }
-    .d-arrow {
-      color: var(--muted);
-      font-size: 1.2rem;
-      padding: 0 0.25rem;
-    }
-    .d-label {
-      font-size: 0.7rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .comparison {
-      margin: 1.5rem 0 2rem 0;
-    }
-    .comparison table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-    .comparison th, .comparison td {
-      padding: 0.75rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-    .comparison th {
-      color: var(--muted);
-      font-weight: 500;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .comparison td { color: var(--fg); }
-    .comparison tr:last-child td { border-bottom: none; }
-    .comparison .highlight { color: var(--accent); font-weight: 500; }
-    footer {
-      text-align: center;
-      padding: 2rem;
-      color: var(--muted);
-      font-size: 0.85rem;
-      border-top: 1px solid var(--border);
-    }
-    footer a { color: var(--muted); }
+    .menu-toggle svg { width: 21px; height: 21px; }
+    .mobile-menu { display: none; }
 
-    /* Mobile responsive */
+    .hero { position: relative; overflow: clip; padding: 80px 0 54px; }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -180px;
+      right: -170px;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(210, 229, 209, 0.65) 0%, rgba(247, 248, 243, 0) 69%);
+      pointer-events: none;
+    }
+    .hero-grid { position: relative; display: grid; grid-template-columns: 1.08fr 0.92fr; align-items: center; gap: 70px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 25px;
+      padding: 7px 12px 7px 8px;
+      border: 1px solid #dbe3d7;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.65);
+      color: #4f5d51;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .eyebrow-icon {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+    }
+    .eyebrow-icon svg { width: 12px; height: 12px; }
+    h1, h2, h3 { font-family: var(--display); }
+    h1 {
+      max-width: 650px;
+      font-size: clamp(58px, 6.1vw, 86px);
+      font-weight: 700;
+      letter-spacing: -0.065em;
+      line-height: 1.02;
+    }
+    h1 .headline-line { display: block; }
+    .headline-accent { position: relative; width: fit-content; color: #c2590f; }
+    .headline-accent::after {
+      content: '';
+      position: absolute;
+      right: 3px;
+      bottom: -8px;
+      left: 5px;
+      height: 9px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 12'%3E%3Cpath d='M2 8.5C65 2.5 155 3 238 5.5' fill='none' stroke='%23ed7c2c' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+      opacity: 0.65;
+    }
+    .hero-copy { max-width: 550px; margin-top: 28px; color: #5d685f; font-size: 18px; line-height: 1.7; }
+    .hero-copy strong { color: var(--ink); font-weight: 600; }
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    .hero-ctas .button { min-height: 54px; padding-inline: 24px; }
+    .install-command {
+      display: inline-flex;
+      align-items: center;
+      gap: 13px;
+      margin-top: 25px;
+      padding: 8px 9px 8px 15px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.45);
+      color: #5c675e;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .install-command .prompt { color: var(--accent); }
+    .copy-button {
+      display: inline-flex;
+      min-width: 61px;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border: 0;
+      border-radius: 5px;
+      background: #e9eee6;
+      color: #59645b;
+      font-family: var(--body);
+      font-size: 11px;
+      cursor: pointer;
+      transition: background 160ms ease;
+    }
+    .copy-button:hover { background: #dde6da; }
+    .copy-button svg { width: 13px; height: 13px; }
+
+    .visual-wrap { position: relative; width: 100%; max-width: 510px; justify-self: end; }
+    .visual-wrap::before {
+      content: '';
+      position: absolute;
+      right: -24px;
+      bottom: -24px;
+      width: 72%;
+      height: 60%;
+      border-radius: 30px;
+      background: #dfe9dc;
+      transform: rotate(4deg);
+      z-index: -1;
+    }
+    .explorer {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(206, 215, 203, 0.9);
+      border-radius: 24px;
+      background: var(--surface-warm);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-principles { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 18px 30px; margin-top: 65px; padding-top: 25px; border-top: 1px solid var(--line); }
+    .principles-label { margin-right: auto; color: var(--soft); font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
+    .principle { display: inline-flex; align-items: center; gap: 8px; color: #4f5a51; font-size: 13px; font-weight: 500; }
+    .principle svg { width: 15px; height: 15px; color: var(--accent); }
+
+
+    .section { padding: 110px 0; }
+    .section-title { max-width: 710px; font-size: clamp(38px, 4.2vw, 57px); font-weight: 600; letter-spacing: -0.055em; line-height: 1.12; }
+    .section-intro { max-width: 600px; margin-top: 22px; color: var(--muted); font-size: 17px; line-height: 1.7; }
+    .text-link { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-size: 14px; font-weight: 600; text-decoration: none; }
+    .text-link svg { width: 16px; height: 16px; color: var(--accent); transition: transform 160ms ease; }
+    .text-link:hover { color: var(--accent-dark); }
+    .text-link:hover svg { transform: translateX(3px); }
+
+    .feature-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 55px; }
+    .feature-card { position: relative; padding: 26px; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: rgba(255, 255, 255, 0.58); transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease; }
+    .feature-card:hover { border-color: #cbd5c7; box-shadow: 0 18px 40px rgba(41, 54, 43, 0.06); transform: translateY(-5px); }
+    .feature-icon { display: grid; width: 46px; height: 46px; place-items: center; margin-bottom: 26px; border-radius: 12px; background: var(--accent-soft); color: var(--accent-dark); }
+    .feature-card:nth-child(2) .feature-icon { background: #e5eee3; color: #55705a; }
+    .feature-card:nth-child(3) .feature-icon { background: #ebe9f1; color: #6c6482; }
+    .feature-icon svg { width: 22px; height: 22px; }
+    .feature-card h3 { margin-bottom: 12px; font-size: 20px; font-weight: 700; letter-spacing: -0.035em; }
+    .feature-card p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+    .how-section { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #eff3ec; }
+    .how-grid { display: grid; grid-template-columns: 1fr 0.9fr; align-items: start; gap: 85px; margin-top: 65px; }
+    .steps { border-top: 1px solid #d4ddd1; }
+    .step { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 20px; padding: 22px 0; border-bottom: 1px solid #d4ddd1; }
+    .step-number { display: grid; width: 35px; height: 35px; place-items: center; border: 1px solid #cdd7c9; border-radius: 50%; color: #566156; font-family: var(--mono); font-size: 12px; }
+    .step h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.025em; }
+    .step p { max-width: 440px; color: #6b756a; font-size: 14px; line-height: 1.65; }
+    .math-card { position: sticky; top: 115px; overflow: hidden; border: 1px solid #d4ddd0; border-radius: 20px; background: var(--surface); box-shadow: 0 20px 50px rgba(48, 66, 51, 0.06); }
+    .math-header { display: flex; align-items: center; justify-content: space-between; padding: 17px 21px; border-bottom: 1px solid #e6ebe2; }
+    .math-header span { color: #566156; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .math-header svg { width: 17px; height: 17px; color: var(--accent); }
+    .math-body { padding: 30px; }
+    .math-caption { margin-bottom: 24px; color: var(--muted); font-size: 14px; }
+    .formula { display: grid; gap: 15px; padding: 22px; border-radius: 12px; background: #f3f6ef; font-family: var(--mono); font-size: 14px; }
+    .formula-row { display: flex; align-items: center; gap: 13px; }
+    .formula-var { min-width: 52px; color: var(--accent-dark); font-weight: 500; }
+    .formula-op { color: #8a9486; }
+    .formula-value { color: #334a39; }
+
+    .build-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; align-items: center; gap: 80px; }
+    .code-window { overflow: hidden; border-radius: 20px; background: var(--dark); box-shadow: 0 28px 65px rgba(24, 37, 30, 0.16); }
+    .code-header { display: flex; align-items: center; justify-content: space-between; padding: 17px 21px; border-bottom: 1px solid #304036; }
+    .window-dots { display: flex; gap: 6px; }
+    .window-dots span { width: 7px; height: 7px; border-radius: 50%; background: #506056; }
+    .window-dots span:first-child { background: #d5854f; }
+    .code-filename { color: #a9b5ab; font-family: var(--mono); font-size: 11px; }
+    .code-header svg { width: 15px; height: 15px; color: #7e9082; }
+    .code-window pre { overflow-x: auto; padding: 28px 26px 30px; color: #dce6dd; font-family: var(--mono); font-size: 12px; line-height: 1.9; }
+    .code-window .kw { color: #e9a477; }
+    .code-window .fn { color: #b5cfa5; }
+    .code-window .str { color: #e6cea0; }
+    .code-window .cmt { color: #8fa397; }
+    .code-window .var { color: #dce6dd; }
+    .build-copy .section-title { font-size: clamp(36px, 3.7vw, 51px); }
+    .build-copy > p { margin-top: 22px; color: var(--muted); font-size: 16px; line-height: 1.75; }
+
+    .usecase-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 52px; }
+    .usecase-card { position: relative; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); text-decoration: none; transition: transform 180ms ease, box-shadow 180ms ease; }
+    a.usecase-card:hover { box-shadow: 0 18px 35px rgba(35, 49, 38, 0.07); transform: translateY(-4px); }
+    .usecase-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .usecase-icon { display: grid; width: 39px; height: 39px; place-items: center; border-radius: 10px; background: #f2f3ed; color: #657360; }
+    .usecase-card:nth-child(1) .usecase-icon, .usecase-card:nth-child(4) .usecase-icon { background: var(--accent-soft); color: var(--accent-dark); }
+    .usecase-icon svg { width: 19px; height: 19px; }
+    .usecase-arrow { color: #9ca49a; }
+    .usecase-arrow svg { width: 17px; height: 17px; }
+    .usecase-card h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.03em; }
+    .usecase-card p { margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.65; }
+
+    .profile-section { padding-top: 35px; padding-bottom: 110px; }
+    .profile-callout { position: relative; display: grid; grid-template-columns: 1.15fr 0.85fr; align-items: center; gap: 60px; overflow: hidden; padding: 65px 70px; border-radius: 24px; background: #ed8135; color: #251c15; }
+    .profile-callout::after {
+      content: '';
+      position: absolute;
+      right: -80px;
+      bottom: -200px;
+      width: 500px;
+      height: 500px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 50%;
+      box-shadow: 0 0 0 45px rgba(255, 255, 255, 0.04), 0 0 0 90px rgba(255, 255, 255, 0.035);
+      pointer-events: none;
+    }
+    .profile-callout h2 { max-width: 560px; font-size: clamp(36px, 4vw, 52px); font-weight: 700; letter-spacing: -0.055em; line-height: 1.12; }
+    .profile-callout p { max-width: 520px; margin-top: 18px; color: #3f2615; font-size: 16px; line-height: 1.7; }
+    .profile-action { position: relative; z-index: 1; justify-self: end; text-align: center; }
+    .profile-action .button { min-height: 55px; padding-inline: 27px; }
+
+    .faq-section { padding-top: 0; }
+    .faq-layout { display: grid; grid-template-columns: 0.7fr 1.3fr; align-items: start; gap: 90px; }
+    .faq-layout .section-title { font-size: clamp(36px, 3.6vw, 49px); }
+    .faq-list { border-top: 1px solid var(--line); }
+    .faq-item { border-bottom: 1px solid var(--line); }
+    .faq-item summary { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 23px 0; font-family: var(--display); font-size: 16px; font-weight: 600; letter-spacing: -0.02em; list-style: none; cursor: pointer; }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-plus { position: relative; width: 20px; height: 20px; flex-shrink: 0; }
+    .faq-plus::before, .faq-plus::after { content: ''; position: absolute; top: 9px; left: 4px; width: 12px; height: 1.5px; background: #687468; transition: transform 180ms ease; }
+    .faq-plus::after { transform: rotate(90deg); }
+    .faq-item[open] .faq-plus::after { transform: rotate(0); }
+    .faq-item[open] summary { color: var(--accent-dark); }
+    .faq-answer { padding: 0 45px 23px 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+    .faq-answer a { color: var(--accent-dark); text-underline-offset: 3px; }
+    .faq-answer code { font-family: var(--mono); font-size: 12px; }
+
+    .final-cta { padding: 0 0 80px; }
+    .final-inner { position: relative; padding: 80px 30px; overflow: hidden; border: 1px solid #d8e1d3; border-radius: 24px; background: #eaf1e6; text-align: center; }
+    .final-inner::before, .final-inner::after { content: ''; position: absolute; width: 90px; height: 90px; opacity: 0.55; }
+    .final-inner::before { top: -28px; left: 8%; border: 1px solid #b7c9b0; border-radius: 22px; transform: rotate(24deg); }
+    .final-inner::after { right: 8%; bottom: -38px; border: 1px solid #dfb389; border-radius: 50%; }
+    .final-inner h2 { margin-bottom: 28px; font-size: clamp(38px, 4.6vw, 60px); font-weight: 600; letter-spacing: -0.06em; line-height: 1.1; }
+    .final-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+    .site-footer { border-top: 1px solid var(--line); }
+    .footer-main { display: flex; align-items: center; justify-content: space-between; gap: 30px; padding: 37px 0; }
+    .footer-tagline { margin-top: 5px; color: var(--soft); font-size: 13px; }
+    .footer-links { display: flex; flex-wrap: wrap; align-items: center; gap: 25px; }
+    .footer-links a { color: #566156; font-size: 13px; text-decoration: none; }
+    .footer-links a:hover { color: var(--accent-dark); }
+    .footer-bottom { padding: 16px 0 23px; border-top: 1px solid var(--line); color: var(--soft); font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em; }
+    .footer-bottom a { text-underline-offset: 3px; }
+
+    .hero-copy a { color: var(--accent-dark); text-underline-offset: 3px; }
+    .chain { display: grid; gap: 6px; padding: 30px 24px; }
+    .chain-row { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 8px; }
+    .chain-box { padding: 13px 4px; border: 1.5px solid; border-radius: 11px; background: white; font-family: var(--mono); font-size: 13px; font-weight: 500; line-height: 1.35; text-align: center; }
+    .chain-box small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
+    .chain-state { border-color: #9db7a3; color: #2f5a3c; }
+    .chain-key { border-color: var(--accent); color: var(--accent-dark); }
+    .chain-utxo { border-color: #c9d2c5; color: var(--ink); }
+    .chain-head { border-color: var(--ink); background: var(--mint); color: var(--ink); }
+    .chain-arrow { color: var(--muted); font-family: var(--mono); font-size: 14px; }
+    .chain-spend { display: grid; justify-items: center; color: var(--muted); font-family: var(--mono); font-size: 12px; line-height: 1.3; }
+    .chain-spend span:first-child { font-size: 16px; }
+
+    .build-copy .text-link { margin-top: 24px; }
+    .why-features { margin-top: 70px; }
+    .feature-card:nth-child(4) .feature-icon { background: #f2f3ed; color: #566156; }
+    .feature-card h3 { font-size: 18px; }
+
+    .comparison-card { margin-top: 45px; overflow-x: auto; border: 1px solid #d4ddd0; border-radius: 20px; background: var(--surface); box-shadow: 0 20px 50px rgba(48, 66, 51, 0.06); }
+    .comparison-card table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 15px; }
+    .comparison-card th, .comparison-card td { padding: 17px 22px; border-bottom: 1px solid #e6ebe2; text-align: left; }
+    .comparison-card tbody tr:last-child th, .comparison-card tbody tr:last-child td { border-bottom: 0; }
+    .comparison-card thead th { color: #566156; font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase; }
+    .comparison-card tbody th { color: var(--muted); font-weight: 500; }
+    .comparison-card td { color: var(--ink); }
+    .comparison-card .ours { background: #fff8f1; }
+    .comparison-card thead .ours { color: var(--accent-dark); }
+    .comparison-card .highlight { color: var(--accent-dark); font-weight: 600; }
+
+    .usecase-card.span-2 { grid-column: span 2; }
+    .profile-grid { grid-template-columns: repeat(2, 1fr); margin-top: 16px; }
+    .usecase-pad { margin-top: 0; }
+    .faq-aside .text-link { margin-top: 24px; }
+    .faq-answer code { padding: 1px 4px; border-radius: 4px; background: #eceee7; }
+
+
+    @media (max-width: 1160px) {
+      .nav-links, .nav-actions .github-link, .nav-actions .button { display: none; }
+      .menu-toggle { display: inline-flex; }
+      .mobile-menu {
+        position: fixed;
+        top: 81px;
+        right: 0;
+        left: 0;
+        z-index: 99;
+        padding: 20px 24px 28px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(247, 248, 243, 0.98);
+        box-shadow: 0 20px 30px rgba(24, 37, 30, 0.08);
+      }
+      .mobile-menu.open { display: grid; gap: 4px; }
+      .mobile-menu a { padding: 12px 4px; font-size: 16px; font-weight: 500; text-decoration: none; }
+      .mobile-menu .button { margin-top: 12px; color: white; }
+    }
+
+    @media (max-width: 1080px) {
+      .nav-links { gap: 20px; }
+      .hero-grid { gap: 35px; }
+      .feature-grid { grid-template-columns: repeat(2, 1fr); }
+      .usecase-grid { grid-template-columns: repeat(3, 1fr); }
+      h1 { font-size: clamp(54px, 6.5vw, 72px); }
+      .hero-copy { font-size: 16px; }
+      .how-grid { gap: 45px; }
+      .build-grid { gap: 45px; }
+      .profile-callout { padding: 55px 50px; }
+    }
+
+    @media (max-width: 900px) {
+      .hero { padding-top: 65px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 75px; }
+      .hero-content { max-width: 690px; }
+      h1 { max-width: 680px; font-size: clamp(64px, 10vw, 84px); }
+      .hero-copy { max-width: 600px; font-size: 18px; }
+      .visual-wrap { max-width: 580px; justify-self: center; }
+      .hero-principles { margin-top: 75px; }
+      .principles-label { width: 100%; }
+      .section { padding: 85px 0; }
+      .feature-grid { gap: 12px; }
+      .comparison-card table { font-size: 13px; }
+      .feature-card { padding: 24px; }
+      .how-grid { grid-template-columns: 1fr; gap: 40px; }
+      .math-card { position: static; }
+      .build-grid { grid-template-columns: 1fr; gap: 50px; }
+      .code-window { order: 2; }
+      .build-copy { order: 1; }
+      .build-copy > p { max-width: 650px; }
+      .usecase-grid { grid-template-columns: repeat(2, 1fr); }
+      .profile-grid { grid-template-columns: repeat(2, 1fr); }
+      .profile-callout { grid-template-columns: 1fr; gap: 35px; }
+      .profile-action { justify-self: start; text-align: left; }
+      .faq-layout { grid-template-columns: 1fr; gap: 45px; }
+    }
+
     @media (max-width: 600px) {
-      main {
-        padding: 2rem 1rem;
-      }
-      h1 {
-        font-size: 2rem;
-      }
-      .version-badge {
-        display: block;
-        margin: 0.5rem 0 0 0;
-        width: fit-content;
-      }
-      .tagline {
-        font-size: 1.1rem;
-      }
-      .intro {
-        font-size: 1rem;
-      }
-      .visual-diagram {
-        padding: 1.25rem 1rem;
-      }
-      .diagram-row {
-        gap: 0.35rem;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-      }
-      .diagram-row:nth-child(2) {
-        justify-content: center;
-      }
-      .visual-diagram {
-        overflow-x: auto;
-        padding: 1.25rem 1rem;
-      }
-      .d-box {
-        min-width: 65px;
-        padding: 0.4rem 0.5rem;
-        font-size: 0.7rem;
-        flex-shrink: 0;
-      }
-      .d-arrow {
-        font-size: 1rem;
-        padding: 0 0.15rem;
-      }
-      .d-label {
-        font-size: 0.6rem;
-      }
-      .code-block {
-        padding: 1rem;
-        font-size: 0.75rem;
-      }
-      .features {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-      .comparison {
-        overflow-x: auto;
-        margin: 1.5rem 0 2rem 0;
-      }
-      .comparison table {
-        font-size: 0.75rem;
-        min-width: 420px;
-      }
-      .comparison th, .comparison td {
-        padding: 0.6rem 0.5rem;
-      }
-      .cta {
-        flex-direction: column;
-      }
-      .cta a {
-        justify-content: center;
-        width: 100%;
-      }
-      .equation {
-        font-size: 0.8rem;
-        padding: 1rem;
-      }
-      .how-list li {
-        font-size: 0.9rem;
-      }
-      .faq-item h3 {
-        font-size: 0.9rem;
-      }
-      .faq-item p {
-        font-size: 0.85rem;
-      }
+      .container { width: min(1200px, calc(100% - 36px)); }
+      .navbar { height: 72px; }
+      .brand-name { font-size: 20px; }
+      .brand-mark { width: 31px; height: 31px; }
+      .version { display: none; }
+      .mobile-menu { top: 71px; }
+      .hero { padding: 45px 0 35px; }
+      .eyebrow { margin-bottom: 22px; }
+      h1 { font-size: clamp(49px, 14.5vw, 68px); letter-spacing: -0.06em; }
+      .hero-copy { margin-top: 25px; font-size: 16px; line-height: 1.65; }
+      .hero-ctas { display: grid; grid-template-columns: 1fr; margin-top: 27px; }
+      .hero-ctas .button { width: 100%; }
+      .install-command { max-width: 100%; gap: 8px; }
+      .copy-button { min-width: 52px; }
+      .hero-grid { gap: 65px; }
+      .visual-wrap::before { right: -10px; bottom: -14px; }
+      .explorer { border-radius: 19px; }
+      .hero-principles { gap: 16px 22px; margin-top: 55px; }
+      .principle { font-size: 11px; }
+      .section { padding: 72px 0; }
+      .section-title { font-size: clamp(35px, 10vw, 45px); }
+      .section-intro { font-size: 15px; }
+      .feature-grid { grid-template-columns: 1fr; margin-top: 38px; }
+      
+      
+      .how-grid { margin-top: 42px; }
+      .step { grid-template-columns: 35px 1fr; gap: 14px; }
+      .math-body { padding: 20px; }
+      .formula { gap: 12px; padding: 17px 13px; font-size: 11px; }
+      .formula-row { gap: 8px; }
+      .formula-var { min-width: 44px; }
+      .code-window pre { padding: 22px 18px; font-size: 11px; }
+      .usecase-grid { margin-top: 38px; gap: 10px; }
+      .profile-grid { grid-template-columns: 1fr; }
+      .usecase-card { padding: 18px; }
+      .profile-section { padding-top: 10px; padding-bottom: 80px; }
+      .profile-callout { gap: 28px; padding: 38px 25px; border-radius: 19px; }
+      .profile-callout h2 { font-size: 36px; }
+      .faq-item summary { padding: 20px 0; font-size: 15px; }
+      .faq-answer { padding-right: 10px; }
+      .final-cta { padding-bottom: 55px; }
+      .final-inner { padding: 55px 20px; border-radius: 19px; }
+      .final-buttons { display: grid; }
+      .footer-main { align-items: flex-start; flex-direction: column; }
+      .footer-links { gap: 17px 22px; }
+      .footer-bottom { align-items: flex-start; flex-direction: column; gap: 8px; }
+    }
+
+    @media (max-width: 600px) {
+      .chain { padding: 22px 12px; }
+      .chain-row { gap: 4px; }
+      .chain-box { padding: 11px 2px; font-size: 12px; }
+      .why-features { margin-top: 50px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: 0.01ms !important; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Blocktrails <span class="version-badge">v0.1</span></h1>
-    <p class="tagline"><span>Nostr-native</span> state on Bitcoin</p>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-    <p class="intro">
-      Blocktrails let you anchor <strong>evolving state</strong> to Bitcoin using nothing but keys and hashes.
-      Each state update creates a new output. Bitcoin's UTXO model guarantees only one valid history exists.
-      No extra tokens. No sidechains. No new consensus rules.
-      A primitive you extend — define tokens, voting, audit trails through <a href="https://blocktrails.org/spec/profiles.html" style="color: var(--accent);">Profiles</a>.
-    </p>
+  <header class="site-header" id="site-header">
+    <div class="container navbar">
+      <a class="brand" href="#" aria-label="Blocktrails home">
+        <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <rect width="40" height="40" rx="11" fill="#17211B"/>
+          <path d="M10 29.5C15.5 29.5 25.5 28.5 25.5 23.5C25.5 18.5 14.5 20.5 14.5 15.5C14.5 12.8 18 11 23 11" stroke="#F7F8F3" stroke-width="3.2" stroke-linecap="round"/>
+          <rect x="24.5" y="7.5" width="7" height="7" rx="2" fill="#ED7C2C"/>
+        </svg>
+        <span class="brand-name">blocktrails</span>
+        <span class="version">v0.1</span>
+      </a>
 
-    <div class="visual-diagram">
-      <div class="diagram-row">
-        <div class="d-box state">State 0<div class="d-label">JSON</div></div>
-        <span class="d-arrow">→</span>
-        <div class="d-box key">Address 0<div class="d-label">P2TR</div></div>
-        <span class="d-arrow">→</span>
-        <div class="d-box utxo">UTXO<div class="d-label">funded</div></div>
-      </div>
-      <div class="diagram-row" style="flex-direction: column; gap: 0;">
-        <span class="d-arrow">↓</span>
-        <span style="color: var(--muted); font-size: 0.7rem;">spend</span>
-      </div>
-      <div class="diagram-row">
-        <div class="d-box state">State 1<div class="d-label">JSON</div></div>
-        <span class="d-arrow">→</span>
-        <div class="d-box key">Address 1<div class="d-label">P2TR</div></div>
-        <span class="d-arrow">→</span>
-        <div class="d-box utxo">UTXO<div class="d-label">head</div></div>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#how-it-works">How it works</a>
+        <a href="#why">Why Nostr-native</a>
+        <a href="#comparison">Comparison</a>
+        <a href="#use-cases">Use cases</a>
+        <a href="#profiles">Profiles</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="github-link" href="https://github.com/blocktrails" aria-label="Blocktrails on GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.52-1.34-1.28-1.7-1.28-1.7-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.57-.29-5.27-1.28-5.27-5.72 0-1.26.45-2.3 1.19-3.11-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.17 1.19a10.98 10.98 0 0 1 5.78 0c2.2-1.5 3.17-1.19 3.17-1.19.63 1.59.23 2.77.11 3.06.74.81 1.19 1.85 1.19 3.11 0 4.45-2.71 5.42-5.29 5.71.42.36.79 1.06.79 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+        </a>
+        <a class="button button-dark button-small" href="https://blocktrails.org/spec/">
+          Read the Spec
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-menu">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
       </div>
     </div>
+    <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation">
+      <a href="#how-it-works">How it works</a>
+      <a href="#why">Why Nostr-native</a>
+      <a href="#comparison">Comparison</a>
+      <a href="#use-cases">Use cases</a>
+      <a href="#profiles">Profiles</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://blocktrails.org/demo/">Live Demo</a>
+      <a href="https://github.com/blocktrails">GitHub</a>
+      <a class="button button-dark" href="https://blocktrails.org/spec/">Read the Spec</a>
+    </nav>
+  </header>
 
-    <h2>How It Works</h2>
-    <p>
-      Each state transition adds a tweak to the previous key, forming a cryptographic chain that mirrors the spend chain.
-      Anyone with the state history can verify the chain.
-    </p>
-    <ol class="how-list">
-      <li data-step="1.">Hash your state to get a tweak value</li>
-      <li data-step="2.">Add the tweak to your previous private key</li>
-      <li data-step="3.">The resulting public key becomes a P2TR output</li>
-      <li data-step="4.">To update state, spend and chain to the next key</li>
-    </ol>
+  <main id="main">
+    <section class="hero">
+      <div class="container">
+        <div class="hero-grid">
+          <div class="hero-content">
+            <div class="eyebrow">
+              <span class="eyebrow-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m12 3 2.200 5.800L20 11l-5.800 2.200L12 19l-2.200-5.800L4 11l5.800-2.200L12 3Z"/></svg>
+              </span>
+              Nostr-native state on Bitcoin
+            </div>
+            <h1>
+              <span class="headline-line">State that</span>
+              <span class="headline-line">leaves a</span>
+              <span class="headline-line headline-accent">trail.</span>
+            </h1>
+            <p class="hero-copy">
+              Blocktrails let you anchor <strong>evolving state</strong> to Bitcoin using nothing but keys and hashes.
+              Each state update creates a new output. Bitcoin's UTXO model guarantees only one valid history exists.
+              No extra tokens. No sidechains. No new consensus rules.
+              A primitive you extend — define tokens, voting, audit trails through <a href="https://blocktrails.org/spec/profiles.html">Profiles</a>.
+            </p>
+            <div class="hero-ctas">
+              <a class="button button-dark" href="https://blocktrails.org/spec/">
+                Read the Spec
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </a>
+              <a class="button button-light" href="https://blocktrails.org/demo/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 6 9 6-9 6V6Z"/></svg>
+                Live Demo
+              </a>
+            </div>
+            <div class="install-command">
+              <span class="prompt">$</span>
+              <span id="install-text">npm install blocktrails</span>
+              <button class="copy-button" id="copy-install" type="button" aria-label="Copy npm install command">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+          </div>
 
-    <div class="code-block">
-<span class="kw">import</span> { <span class="var">Blocktrail</span> } <span class="kw">from</span> <span class="str">'blocktrails'</span>;
+          <div class="visual-wrap">
+            <div class="explorer">
+              <div class="chain" role="img" aria-label="State 0 commits to Address 0, a funded UTXO. Spending it moves to State 1, Address 1, the UTXO at the head of the trail.">
+              <div class="chain-row">
+                <div class="chain-box chain-state">State 0<small>JSON</small></div>
+                <span class="chain-arrow">→</span>
+                <div class="chain-box chain-key">Address 0<small>P2TR</small></div>
+                <span class="chain-arrow">→</span>
+                <div class="chain-box chain-utxo">UTXO<small>funded</small></div>
+              </div>
+              <div class="chain-spend"><span>↓</span><span>spend</span></div>
+              <div class="chain-row">
+                <div class="chain-box chain-state">State 1<small>JSON</small></div>
+                <span class="chain-arrow">→</span>
+                <div class="chain-box chain-key">Address 1<small>P2TR</small></div>
+                <span class="chain-arrow">→</span>
+                <div class="chain-box chain-head">UTXO<small>head</small></div>
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-principles">
+          <span class="principles-label">A primitive you extend</span>
+          <span class="principle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>No extra tokens</span>
+          <span class="principle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>No sidechains</span>
+          <span class="principle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>No new consensus rules</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section how-section" id="how-it-works">
+      <div class="container">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-intro">Each state transition adds a tweak to the previous key, forming a cryptographic chain that mirrors the spend chain. Anyone with the state history can verify the chain.</p>
+
+        <div class="how-grid">
+          <ol class="steps">
+            <li class="step"><span class="step-number">1</span><h3>Hash your state to get a tweak value</h3></li>
+            <li class="step"><span class="step-number">2</span><h3>Add the tweak to your previous private key</h3></li>
+            <li class="step"><span class="step-number">3</span><h3>The resulting public key becomes a P2TR output</h3></li>
+            <li class="step"><span class="step-number">4</span><h3>To update state, spend and chain to the next key</h3></li>
+          </ol>
+
+          <aside class="math-card" aria-label="The math">
+            <div class="math-header">
+              <span>The Math</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 17 10 7l4 6 6-10M4 4v16h16"/></svg>
+            </div>
+            <div class="math-body">
+              <p class="math-caption">State commitment is chained scalar addition:</p>
+              <div class="formula">
+                <div class="formula-row formula-op"># derive key for state i</div>
+                <div class="formula-row"><span class="formula-var">tᵢ</span><span class="formula-op">=</span><span class="formula-value">SHA256(stateᵢ) mod n</span></div>
+                <div class="formula-row"><span class="formula-var">dᵢ</span><span class="formula-op">=</span><span class="formula-value">dᵢ₋₁ + tᵢ</span></div>
+                <div class="formula-row"><span class="formula-var">Pᵢ</span><span class="formula-op">=</span><span class="formula-value">Pᵢ₋₁ + tᵢ·G</span></div>
+                <div class="formula-row formula-op"># Bitcoin output uses x-coordinate</div>
+                <div class="formula-row"><span class="formula-var">output</span><span class="formula-op">=</span><span class="formula-value">x(Pᵢ)</span></div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="why">
+      <div class="container">
+        <div class="build-grid">
+          <div class="code-window" aria-label="JavaScript example">
+            <div class="code-header">
+              <div class="window-dots"><span></span><span></span><span></span></div>
+              <span class="code-filename">trail.js</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m8 9-3 3 3 3M16 9l3 3-3 3M13 6l-2 12"/></svg>
+            </div>
+<pre><span class="kw">import</span> { <span class="var">Blocktrail</span> } <span class="kw">from</span> <span class="str">'blocktrails'</span>;
 
 <span class="cmt">// Create a trail with your Nostr key</span>
 <span class="kw">const</span> <span class="var">trail</span> = <span class="kw">new</span> <span class="fn">Blocktrail</span>(privateKey);
@@ -469,160 +750,282 @@
 console.<span class="fn">log</span>(genesis.p2trAddress); <span class="cmt">// bc1p...</span>
 
 <span class="cmt">// Advance state → new address</span>
-trail.<span class="fn">advance</span>(<span class="str">'{"balance": 900}'</span>);
-    </div>
+trail.<span class="fn">advance</span>(<span class="str">'{"balance": 900}'</span>);</pre>
+          </div>
+          <div class="build-copy">
+            <h2 class="section-title">Why Nostr-Native?</h2>
+            <p>Blocktrails use full secp256k1 keys internally — the same keys Nostr uses. Your existing Nostr identity can control a Blocktrail directly. No awkward key conversions. No parity headaches. The x-only encoding required by Taproot is handled only at the Bitcoin boundary.</p>
+          </div>
+        </div>
 
-    <h2>Why Nostr-Native?</h2>
-    <p class="spaced">
-      Blocktrails use full secp256k1 keys internally — the same keys Nostr uses.
-      Your existing Nostr identity can control a Blocktrail directly.
-      No awkward key conversions. No parity headaches.
-      The x-only encoding required by Taproot is handled only at the Bitcoin boundary.
-    </p>
+        <div class="feature-grid why-features">
+          <article class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/></svg></div>
+            <h3>Minimal</h3>
+            <p>One P2TR output per state update. Key-path spends only. No scripts.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.500 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <h3>SPV-Compatible</h3>
+            <p>Verify with merkle proofs. No full node required.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="4"/><circle cx="16" cy="16" r="4"/><path d="m11 11 2 2"/></svg></div>
+            <h3>Composable</h3>
+            <p>A primitive, not a protocol. Define your own state format and rules.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M6.500 6.500 17.500 17.500"/></svg></div>
+            <h3>No Extra Tokens</h3>
+            <p>Just Bitcoin. No wrapped assets, no bridges, no new consensus.</p>
+          </article>
+        </div>
+      </div>
+    </section>
 
-    <div class="features">
-      <div class="feature">
-        <h3>Minimal</h3>
-        <p>One P2TR output per state update. Key-path spends only. No scripts.</p>
+    <section class="section how-section" id="comparison">
+      <div class="container">
+        <h2 class="section-title">Comparison</h2>
+        <p class="section-intro">How Blocktrails compares to other Bitcoin state protocols:</p>
+        <div class="comparison-card" tabindex="0" role="region" aria-label="Comparison table">
+          <table>
+            <thead><tr><th scope="col"></th><th scope="col" class="ours">Blocktrails</th><th scope="col">RGB</th><th scope="col">Taproot Assets</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Complexity</th><td class="ours highlight">Minimal</td><td>High</td><td>Medium</td></tr>
+              <tr><th scope="row">Validation</th><td class="ours">Client-side</td><td>Client-side</td><td>Universe servers</td></tr>
+              <tr><th scope="row">State model</th><td class="ours highlight">Linear chain</td><td>DAG</td><td>Asset tree</td></tr>
+              <tr><th scope="row">On-chain footprint</th><td class="ours highlight">1 P2TR output</td><td>1 output + commitment</td><td>1 output + witness</td></tr>
+              <tr><th scope="row">Key model</th><td class="ours highlight">Nostr-native</td><td>Custom</td><td>Custom</td></tr>
+              <tr><th scope="row">Best for</th><td class="ours">Simple state machines</td><td>Complex contracts</td><td>Asset issuance</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="feature">
-        <h3>SPV-Compatible</h3>
-        <p>Verify with merkle proofs. No full node required.</p>
-      </div>
-      <div class="feature">
-        <h3>Composable</h3>
-        <p>A primitive, not a protocol. Define your own state format and rules.</p>
-      </div>
-      <div class="feature">
-        <h3>No Extra Tokens</h3>
-        <p>Just Bitcoin. No wrapped assets, no bridges, no new consensus.</p>
-      </div>
-    </div>
+    </section>
 
-    <h2>Comparison</h2>
-    <p>How Blocktrails compares to other Bitcoin state protocols:</p>
-    <div class="comparison">
-      <table>
-        <tr>
-          <th></th>
-          <th>Blocktrails</th>
-          <th>RGB</th>
-          <th>Taproot Assets</th>
-        </tr>
-        <tr>
-          <td>Complexity</td>
-          <td class="highlight">Minimal</td>
-          <td>High</td>
-          <td>Medium</td>
-        </tr>
-        <tr>
-          <td>Validation</td>
-          <td>Client-side</td>
-          <td>Client-side</td>
-          <td>Universe servers</td>
-        </tr>
-        <tr>
-          <td>State model</td>
-          <td class="highlight">Linear chain</td>
-          <td>DAG</td>
-          <td>Asset tree</td>
-        </tr>
-        <tr>
-          <td>On-chain footprint</td>
-          <td class="highlight">1 P2TR output</td>
-          <td>1 output + commitment</td>
-          <td>1 output + witness</td>
-        </tr>
-        <tr>
-          <td>Key model</td>
-          <td class="highlight">Nostr-native</td>
-          <td>Custom</td>
-          <td>Custom</td>
-        </tr>
-        <tr>
-          <td>Best for</td>
-          <td>Simple state machines</td>
-          <td>Complex contracts</td>
-          <td>Asset issuance</td>
-        </tr>
-      </table>
-    </div>
+    <section class="section" id="use-cases">
+      <div class="container">
+        <h2 class="section-title">Use Cases</h2>
+        <p class="section-intro">Blocktrails are a building block. Applications define what state means:</p>
+        <div class="usecase-grid">
+          <div class="usecase-card">
+            <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M9 9h4a2 2 0 0 1 0 4H9h4a2 2 0 0 1 0 4H9M11 6v3M11 17v2"/></svg></span></div>
+            <h3>Token ledgers</h3>
+          </div>
+          <div class="usecase-card">
+            <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 7v10M8 7c4 0 2 5 8 5"/></svg></span></div>
+            <h3>Version control</h3>
+          </div>
+          <div class="usecase-card">
+            <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 5h16v12H9l-5 4V5Z"/><path d="m8 11 2 2 5-5"/></svg></span></div>
+            <h3>Voting systems</h3>
+          </div>
+          <div class="usecase-card">
+            <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 3h9l3 3v15H6zM9 11h6M9 15h6M9 7h3"/></svg></span></div>
+            <h3>Audit trails</h3>
+          </div>
+          <div class="usecase-card">
+            <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 8h8a5 5 0 0 1 4.8 6.400l-1 3A2.500 2.500 0 0 1 16 18l-1.500-2h-5L8 18a2.500 2.500 0 0 1-3.800-.6l-1-3A5 5 0 0 1 8 8Z"/><path d="M7 11v4M5 13h4M16 12h.01M18 14h.01"/></svg></span></div>
+            <h3>Game state</h3>
+          </div>
+          <div class="usecase-card">
+            <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span></div>
+            <h3>IoT logs</h3>
+          </div>
+          <div class="usecase-card span-2">
+            <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 8v8M8 12h8"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg></span></div>
+            <h3>Any linear state machine</h3>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <h2>The Math</h2>
-    <p>State commitment is chained scalar addition:</p>
-    <div class="equation">
-      <span class="comment"># derive key for state i</span><br>
-      <span class="var">tᵢ</span> <span class="op">= SHA256(stateᵢ) mod n</span><br>
-      <span class="var">dᵢ</span> <span class="op">= dᵢ₋₁ + tᵢ</span><br>
-      <span class="var">Pᵢ</span> <span class="op">= Pᵢ₋₁ + tᵢ·G</span><br><br>
-      <span class="comment"># Bitcoin output uses x-coordinate</span><br>
-      <span class="var">output</span> <span class="op">= x(Pᵢ)</span>
-    </div>
+    <section class="section profile-section" id="profiles">
+      <div class="container">
+        <div class="profile-callout">
+          <div>
+            <h2>Profiles</h2>
+            <p>Application-layer profiles define state formats and validation rules:</p>
+          </div>
+          <div class="profile-action">
+            <a class="button button-dark" href="https://blocktrails.org/spec/profiles.html">
+              Profiles
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="usecase-grid profile-grid">
+          <a class="usecase-card" href="https://blocktrails.github.io/monochrome/">
+            <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M9 9h4a2 2 0 0 1 0 4H9h4a2 2 0 0 1 0 4H9M11 6v3M11 17v2"/></svg></span><span class="usecase-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span></div>
+            <h3>MRC20</h3>
+            <p>Fungible tokens with mint, transfer, burn. Issuer-controlled ledger.</p>
+          </a>
+          <a class="usecase-card" href="https://blocktrails.github.io/git-mark/">
+            <div class="usecase-top"><span class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 7v10M8 7c4 0 2 5 8 5"/></svg></span><span class="usecase-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span></div>
+            <h3>Git-mark</h3>
+            <p>Anchor git commits to Bitcoin. Commit hash as tweak, TXO URIs.</p>
+          </a>
+        </div>
+      </div>
+    </section>
 
-    <h2>Use Cases</h2>
-    <p>Blocktrails are a building block. Applications define what state means:</p>
-    <div class="usecases">
-      <span>Token ledgers</span>
-      <span>Version control</span>
-      <span>Voting systems</span>
-      <span>Audit trails</span>
-      <span>Game state</span>
-      <span>IoT logs</span>
-      <span>Any linear state machine</span>
-    </div>
+    <section class="section faq-section" id="faq">
+      <div class="container faq-layout">
+        <div class="faq-aside">
+          <h2 class="section-title">FAQ</h2>
+          <a class="text-link" href="https://blocktrails.org/spec/">
+            Read the Spec
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary>How is this different from RGB or Taproot Assets?<span class="faq-plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">RGB and Taproot Assets are full protocols with complex validation layers. Blocktrails is a minimal primitive — just key tweaking and spend chains. You build your own rules on top. Think of it as the simplest possible state anchoring.</div>
+          </details>
+          <details class="faq-item">
+            <summary>Where is the state stored?<span class="faq-plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">Off-chain. Bitcoin only stores the commitment (the output key). You need the actual state bytes to verify, but they can live anywhere — git repos, IPFS, Nostr relays.</div>
+          </details>
+          <details class="faq-item">
+            <summary>What prevents invalid state transitions?<span class="faq-plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">Client-side validation. Verifiers check that each transition follows the rules your application defines. Bitcoin enforces ordering and prevents double-spends.</div>
+          </details>
+          <details class="faq-item">
+            <summary>Can I define my own state format?<span class="faq-plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">Yes — that's the point. Blocktrails is a primitive, not a protocol. The spec defines <a href="https://blocktrails.org/spec/profiles.html">Profiles</a> for application-specific rules. MRC20 defines fungible tokens. Monochrome defines generic state machines. Git-mark anchors git commits to Bitcoin. You can create your own profile for voting, attestations, game state — anything that fits a linear state model. The base layer never changes.</div>
+          </details>
+          <details class="faq-item">
+            <summary>Do I need to run a full node?<span class="faq-plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">No. Blocktrails are SPV-compatible. You only need output keys and merkle inclusion proofs.</div>
+          </details>
+          <details class="faq-item">
+            <summary>Is there a reference implementation?<span class="faq-plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">Yes. <code>npm install blocktrails</code> — JavaScript/Node.js with full test suite. See the <a href="https://github.com/blocktrails/blocktrails">GitHub repo</a>.</div>
+          </details>
+        </div>
+      </div>
+    </section>
 
-    <div class="cta">
-      <a href="https://blocktrails.org/spec/" class="primary">Read the Spec</a>
-      <a href="https://blocktrails.org/spec/profiles.html" class="secondary">Profiles</a>
-      <a href="https://blocktrails.org/demo/" class="secondary">Live Demo</a>
-      <a href="https://github.com/blocktrails" class="secondary">GitHub</a>
-    </div>
-
-    <h2>Profiles</h2>
-    <p>Application-layer profiles define state formats and validation rules:</p>
-    <div class="features">
-      <div class="feature">
-        <h3><a href="https://blocktrails.github.io/monochrome/" style="color: var(--accent); text-decoration: none;">MRC20</a></h3>
-        <p>Fungible tokens with mint, transfer, burn. Issuer-controlled ledger.</p>
+    <section class="final-cta">
+      <div class="container final-inner">
+        <h2>A primitive you extend.</h2>
+        <div class="final-buttons">
+          <a class="button button-dark" href="https://blocktrails.org/spec/">
+            Read the Spec
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="button button-light" href="https://blocktrails.org/spec/profiles.html">Profiles</a>
+          <a class="button button-light" href="https://blocktrails.org/demo/">Live Demo</a>
+          <a class="button button-light" href="https://github.com/blocktrails">GitHub</a>
+        </div>
       </div>
-      <div class="feature">
-        <h3><a href="https://blocktrails.github.io/git-mark/" style="color: var(--accent); text-decoration: none;">Git-mark</a></h3>
-        <p>Anchor git commits to Bitcoin. Commit hash as tweak, TXO URIs.</p>
-      </div>
-    </div>
-
-    <h2>FAQ</h2>
-    <div class="faq">
-      <div class="faq-item">
-        <h3>How is this different from RGB or Taproot Assets?</h3>
-        <p>RGB and Taproot Assets are full protocols with complex validation layers. Blocktrails is a minimal primitive — just key tweaking and spend chains. You build your own rules on top. Think of it as the simplest possible state anchoring.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Where is the state stored?</h3>
-        <p>Off-chain. Bitcoin only stores the commitment (the output key). You need the actual state bytes to verify, but they can live anywhere — git repos, IPFS, Nostr relays.</p>
-      </div>
-      <div class="faq-item">
-        <h3>What prevents invalid state transitions?</h3>
-        <p>Client-side validation. Verifiers check that each transition follows the rules your application defines. Bitcoin enforces ordering and prevents double-spends.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Can I define my own state format?</h3>
-        <p>Yes — that's the point. Blocktrails is a primitive, not a protocol. The spec defines <a href="https://blocktrails.org/spec/profiles.html" style="color: var(--accent);">Profiles</a> for application-specific rules. MRC20 defines fungible tokens. Monochrome defines generic state machines. Git-mark anchors git commits to Bitcoin. You can create your own profile for voting, attestations, game state — anything that fits a linear state model. The base layer never changes.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Do I need to run a full node?</h3>
-        <p>No. Blocktrails are SPV-compatible. You only need output keys and merkle inclusion proofs.</p>
-      </div>
-      <div class="faq-item">
-        <h3>Is there a reference implementation?</h3>
-        <p>Yes. <code>npm install blocktrails</code> — JavaScript/Node.js with full test suite. See the <a href="https://github.com/blocktrails/blocktrails" style="color: var(--accent);">GitHub repo</a>.</p>
-      </div>
-    </div>
-
+    </section>
   </main>
 
-  <footer>
-    <p>Public domain · <a href="https://github.com/blocktrails">github.com/blocktrails</a></p>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-main">
+        <div>
+          <a class="brand" href="#" aria-label="Blocktrails home">
+            <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <rect width="40" height="40" rx="11" fill="#17211B"/>
+              <path d="M10 29.5C15.5 29.5 25.5 28.5 25.5 23.5C25.5 18.5 14.5 20.5 14.5 15.5C14.5 12.8 18 11 23 11" stroke="#F7F8F3" stroke-width="3.2" stroke-linecap="round"/>
+              <rect x="24.5" y="7.5" width="7" height="7" rx="2" fill="#ED7C2C"/>
+            </svg>
+            <span class="brand-name">blocktrails</span>
+          </a>
+          <p class="footer-tagline">Nostr-native state on Bitcoin</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer navigation">
+          <a href="https://blocktrails.org/spec/">Spec</a>
+          <a href="https://blocktrails.org/spec/profiles.html">Profiles</a>
+          <a href="https://blocktrails.org/demo/">Live Demo</a>
+          <a href="https://github.com/blocktrails">GitHub</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        Public domain · <a href="https://github.com/blocktrails">github.com/blocktrails</a>
+      </div>
+    </div>
   </footer>
+
+  <script>
+    const header = document.getElementById('site-header');
+    const menuButton = document.querySelector('.menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    const updateHeader = () => header.classList.toggle('scrolled', window.scrollY > 8);
+    updateHeader();
+    window.addEventListener('scroll', updateHeader, { passive: true });
+
+    const closeMenu = () => {
+      mobileMenu.classList.remove('open');
+      menuButton.setAttribute('aria-expanded', 'false');
+      menuButton.setAttribute('aria-label', 'Open navigation');
+      document.body.classList.remove('menu-open');
+    };
+
+    menuButton.addEventListener('click', () => {
+      const isOpen = menuButton.getAttribute('aria-expanded') === 'true';
+      if (isOpen) {
+        closeMenu();
+      } else {
+        mobileMenu.classList.add('open');
+        menuButton.setAttribute('aria-expanded', 'true');
+        menuButton.setAttribute('aria-label', 'Close navigation');
+        document.body.classList.add('menu-open');
+      }
+    });
+
+    mobileMenu.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeMenu();
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 900) closeMenu();
+    });
+
+    const copyButton = document.getElementById('copy-install');
+    const copyLabel = copyButton.querySelector('span');
+    let copyTimer;
+
+    const fallbackCopy = text => {
+      const field = document.createElement('textarea');
+      field.value = text;
+      field.style.position = 'fixed';
+      field.style.opacity = '0';
+      document.body.appendChild(field);
+      field.select();
+      document.execCommand('copy');
+      field.remove();
+    };
+
+    copyButton.addEventListener('click', async () => {
+      const command = document.getElementById('install-text').textContent;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(command);
+        } else {
+          fallbackCopy(command);
+        }
+        copyLabel.textContent = 'Copied';
+        copyButton.setAttribute('aria-label', 'Copied npm install command');
+      } catch {
+        copyLabel.textContent = 'Select';
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(document.getElementById('install-text'));
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => {
+        copyLabel.textContent = 'Copy';
+        copyButton.setAttribute('aria-label', 'Copy npm install command');
+      }, 1800);
+    });
+
+  </script>
 </body>
 </html>
